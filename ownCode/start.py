@@ -44,20 +44,34 @@ def makeOwnToyNetwork():
     ]
 
     bottle_neck_edges = [
-        (1, 2, 1200, 80),
-        (2, 3, 400, 80),
-        (2, 4, 800, 80),
-        (3, 5, 400, 80),
-        (4, 6, 800, 80),
-        (5, 7, 400, 80),
-        (6, 7, 800, 80),
-        (7, 8, 1200, 80),
-        (8, 9, 1500, 80),
-        (9, 10, 1500, 80),
-        (10, 1, 1500, 80),
+        (1, 2),
+        (2, 3),
+        (2, 4),
+        (3, 5),
+        (4, 6),
+        (5, 7),
+        (6, 7),
+        (7, 8),
+        (8, 9),
+        (9, 10),
+        (10, 1),
+    ]
+
+    bottle_neck_capacity_speed =   [
+        (1200, 80),
+        (400, 80),
+        ( 800, 80),
+        ( 400, 80),
+        ( 800, 80),
+        ( 400, 80),
+        ( 800, 80),
+        ( 1200, 80),
+        ( 1500, 80),
+        ( 1500, 80),
+        ( 1500, 80),
     ]
     g.add_edges_from(ebunch_of_edges)
-    set_network_attributes(g, bottle_neck_edges)
+    set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
 
     #centroid_x = np.array([10])
     #centroid_y = np.array([10])
@@ -68,7 +82,7 @@ def makeOwnToyNetwork():
     show_network(g, euclidean=True)
     return g
 
-def set_network_attributes(g, bottleneck_edges):
+def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed):
     #default like this
     capacity = 2000
     free_speed = 80
@@ -86,8 +100,8 @@ def set_network_attributes(g, bottleneck_edges):
         data["free_speed"] = free_speed
         data["lanes"] = lanes
         if (u, v,) in bottleneck_edges:
-            print('gank')
-            # data["capacity"] = w
-            # data["free_speed"] = z
+            index = bottleneck_edges.index((u,v))
+            data["capacity"] = bottle_neck_capacity_speed[index][0]
+            data["free_speed"] = bottle_neck_capacity_speed[index][1]
 
 g = makeOwnToyNetwork()
