@@ -1,9 +1,12 @@
 import networkx as nx
 import numpy as np
+import pathlib
+import dyntapy
 
 from dyntapy import show_network, add_centroids, relabel_graph, show_demand, \
     add_connectors
 from pytest import mark
+from dyntapy.assignments import StaticAssignment
 from dyntapy.demand_data import od_graph_from_matrix
 from dyntapy.supply_data import _set_toy_network_attributes, build_network
 from dyntapy.settings import parameters
@@ -73,14 +76,15 @@ def makeOwnToyNetwork():
     g.add_edges_from(ebunch_of_edges)
     set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
 
-    #centroid_x = np.array([10])
-    #centroid_y = np.array([10])
-    #g = add_centroids(g, centroid_x, centroid_y, k=1, method='turn', euclidean=True)
+    centroid_x = np.array([25,65])
+    centroid_y = np.array([35,35])
+    g = add_centroids(g, centroid_x, centroid_y, k=1, method='link', euclidean=True)
     # also adds connectors automatically
     g = relabel_graph(g)  # adding link and node ids, connectors and centroids
     # are the first elements
-    show_network(g, euclidean=True)
-    return g
+    #show_network(g, euclidean=True)
+    ODcentroids = [[10,80], [35,35]]
+    return g, ODcentroids
 
 def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed):
     #default like this
@@ -104,4 +108,19 @@ def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed):
             data["capacity"] = bottle_neck_capacity_speed[index][0]
             data["free_speed"] = bottle_neck_capacity_speed[index][1]
 
-g = makeOwnToyNetwork()
+def getODGraph(ODMatrix, ODcentroids):
+    xOD = ODcentroids[0]
+    yOD = ODcentroids[1]
+    matrix = np.genfromtxt(ODMatrix, delimiter=',')
+    return od_graph_from_matrix(matrix, xOD, yOD)
+
+def main():
+    g, ODcentroids = makeOwnToyNetwork()
+    ODMatrix = str(pathlib.Path(__file__).parent)+'/data/ODmatrix.csv'
+    odGraph = getODGraph(ODMatrix, ODcentroids)
+    assignment = StaticAssignment(g, odGraph)
+    result = assignment.run('msa')
+    show_network(g,flows = result.flows, euclidean = True)
+
+
+main()
