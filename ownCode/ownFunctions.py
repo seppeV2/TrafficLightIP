@@ -14,7 +14,7 @@ from dyntapy.demand import build_internal_static_demand, \
     build_internal_dynamic_demand, DynamicDemand, SimulationTime
 from osmnx.distance import euclidean_dist_vec
 
-
+#building our own two rout DiGraph route (using nodes)
 def makeOwnToyNetwork():
     g = nx.DiGraph()
     ebunch_of_nodes = [
@@ -86,6 +86,7 @@ def makeOwnToyNetwork():
     ODcentroids = [[10,80], [35,35]]
     return g, ODcentroids
 
+#modified dyntapy function to change the capacity and the speed of each link
 def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed):
     #default like this
     capacity = 2000
@@ -108,19 +109,10 @@ def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed):
             data["capacity"] = bottle_neck_capacity_speed[index][0]
             data["free_speed"] = bottle_neck_capacity_speed[index][1]
 
+#function to load the OD matrix in from .cvs file to numpy array 
 def getODGraph(ODMatrix, ODcentroids):
     xOD = ODcentroids[0]
     yOD = ODcentroids[1]
     matrix = np.genfromtxt(ODMatrix, delimiter=',')
     return od_graph_from_matrix(matrix, xOD, yOD)
 
-def main():
-    g, ODcentroids = makeOwnToyNetwork()
-    ODMatrix = str(pathlib.Path(__file__).parent)+'/data/ODmatrix.csv'
-    odGraph = getODGraph(ODMatrix, ODcentroids)
-    assignment = StaticAssignment(g, odGraph)
-    result = assignment.run('msa')
-    show_network(g,flows = result.flows, euclidean = True)
-
-
-main()
