@@ -78,7 +78,7 @@ def makeOwnToyNetwork():
 
     centroid_x = np.array([25,65])
     centroid_y = np.array([35,35])
-    g = add_centroids(g, centroid_x, centroid_y, k=1, method='link', euclidean=True)
+    #g = add_centroids(g, centroid_x, centroid_y, k=1, method='link', euclidean=True)
     # also adds connectors automatically
     g = relabel_graph(g)  # adding link and node ids, connectors and centroids
     # are the first elements
