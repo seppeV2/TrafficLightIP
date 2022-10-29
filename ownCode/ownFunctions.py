@@ -29,7 +29,7 @@ def makeOwnToyNetwork():
         (9, {"x_coord": 75 , "y_coord": 0}),
         (10, {"x_coord": 15 , "y_coord": 0}),
         (11, {"x_coord": 30 , "y_coord": 15}),
-
+    
     ]
 
     g.add_nodes_from(ebunch_of_nodes)
@@ -86,7 +86,7 @@ def makeOwnToyNetwork():
    
     # are the first elements
     #show_network(g, euclidean=True)
-    ODcentroids = np.array([np.array([10,80,30]), np.array([35,35,15])])
+    ODcentroids = np.array([np.array([10,25,35,35,55,55,65,80,75,15,30]), np.array([35,35,50,20,50,20,35,35,0,0,15])])
     #g = add_centroids(g,ODcentroids[0], ODcentroids[1], k=1, method='turn', euclidean=True, name = ['Origin', 'Destination', 'origin2'])
     g = relabel_graph(g)  # adding link and node ids, connectors and centroids
     return g, ODcentroids

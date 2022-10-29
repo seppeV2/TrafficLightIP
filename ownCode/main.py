@@ -26,6 +26,7 @@ from dyntapy.demand import (
 from ownFunctions import makeOwnToyNetwork, getODGraph
 from greenTimes import websterGreenTimes
 from aidFunctions import getNodeSummary
+from dyntapy_green_time_change import GreenStaticAssignment
 
 
 
@@ -34,11 +35,14 @@ def main():
     g, ODcentroids = makeOwnToyNetwork()
     ODMatrix = str(pathlib.Path(__file__).parent)+'/data/ODmatrix.csv'
     odGraph = getODGraph(ODMatrix, ODcentroids)
-    assignment = StaticAssignment(g, odGraph)
+    assignment = GreenStaticAssignment(g, odGraph)
     result = assignment.run('msa')
-    show_network(g,flows = result.flows, euclidean = True)
+    #show_network(g,flows = result.flows, euclidean = True)
     network = build_network(g)
     getNodeSummary(network)
-    costs, flows, gap_definition, gap = msa_flow_averaging(network, build_internal_static_demand(odGraph), False)
+    staticDemand = build_internal_static_demand(odGraph)
+    print(staticDemand.origins)
+    print(staticDemand.destinations)
+    costs, flows, gap_definition, gap = msa_flow_averaging(network, staticDemand, False)
 
 main()
