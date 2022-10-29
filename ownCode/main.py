@@ -23,7 +23,7 @@ from dyntapy.demand import (
 )
 
 
-from ownFunctions import makeOwnToyNetwork, getODGraph
+from ownFunctions import makeOwnToyNetwork, getODGraph, getIntersections
 from greenTimes import websterGreenTimes
 from aidFunctions import getNodeSummary
 from dyntapy_green_time_change import GreenStaticAssignment
@@ -39,10 +39,11 @@ def main():
     result = assignment.run('msa')
     #show_network(g,flows = result.flows, euclidean = True)
     network = build_network(g)
-    getNodeSummary(network)
+    getIntersections(network)
+    #getNodeSummary(network)
     staticDemand = build_internal_static_demand(odGraph)
-    print(staticDemand.origins)
-    print(staticDemand.destinations)
     costs, flows, gap_definition, gap = msa_flow_averaging(network, staticDemand, False)
+
+
 
 main()
