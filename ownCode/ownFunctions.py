@@ -28,6 +28,7 @@ def makeOwnToyNetwork():
         (8, {"x_coord": 80 , "y_coord": 35}),
         (9, {"x_coord": 75 , "y_coord": 0}),
         (10, {"x_coord": 15 , "y_coord": 0}),
+        (11, {"x_coord": 30 , "y_coord": 15}),
 
     ]
 
@@ -44,6 +45,8 @@ def makeOwnToyNetwork():
         (8, 9),
         (9, 10),
         (10, 1),
+        (11, 4),
+        (4, 11),
     ]
 
     bottle_neck_edges = [
@@ -76,14 +79,16 @@ def makeOwnToyNetwork():
     g.add_edges_from(ebunch_of_edges)
     set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
 
-    centroid_x = np.array([25,65])
-    centroid_y = np.array([35,35])
-    #g = add_centroids(g, centroid_x, centroid_y, k=1, method='link', euclidean=True)
+    centroid_x = np.array([65])
+    centroid_y = np.array([35])
+    #g = add_centroids(g, centroid_x, centroid_y, k=3, method='link', euclidean=True, name = ['FirstIntersection'])
     # also adds connectors automatically
-    g = relabel_graph(g)  # adding link and node ids, connectors and centroids
+   
     # are the first elements
     #show_network(g, euclidean=True)
-    ODcentroids = [[10,80], [35,35]]
+    ODcentroids = np.array([np.array([10,80,30]), np.array([35,35,15])])
+    #g = add_centroids(g,ODcentroids[0], ODcentroids[1], k=1, method='turn', euclidean=True, name = ['Origin', 'Destination', 'origin2'])
+    g = relabel_graph(g)  # adding link and node ids, connectors and centroids
     return g, ODcentroids
 
 #modified dyntapy function to change the capacity and the speed of each link
@@ -114,5 +119,20 @@ def getODGraph(ODMatrix, ODcentroids):
     xOD = ODcentroids[0]
     yOD = ODcentroids[1]
     matrix = np.genfromtxt(ODMatrix, delimiter=',')
-    return od_graph_from_matrix(matrix, xOD, yOD)
+    return od_graph_from_matrix(matrix, X=xOD, Y=yOD)
 
+bpr_b = parameters.static_assignment.bpr_beta
+bpr_a = parameters.static_assignment.bpr_alpha
+
+#building our own bpr funtion 
+def __bpr_green_cost(flows, capacities, ff_tts, g_times):
+    number_of_links = len(flows)
+    costs = np.empty(number_of_links, dtype=np.float64)
+    for it, (f, c, ff_tt, g_t) in enumerate(zip(flows, capacities, ff_tts, g_times)):
+        assert c != 0
+        costs[it] = __bpr_cost_single(f, c, ff_tt, g_t)
+    return costs
+
+def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
+    return 1.0 * ff_tt + np.multiply(bpr_a, pow(flow / (capacity*g_time), bpr_b)) * ff_tt
+    

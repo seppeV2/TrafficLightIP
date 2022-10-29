@@ -1,0 +1,4 @@
+HERE IS A LIST OF THE ASSUMPTIONS MADE IN THIS PROJECT 
+	(last update 28/10)
+
+-> for the webster green times the L is put to zero (no orange light and no time needed to get to start)

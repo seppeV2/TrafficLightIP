@@ -2,7 +2,9 @@ from numpy import *
 import os
 import pathlib
 
+from dyntapy.supply_data import get_toy_network
+from dyntapy import show_network, relabel_graph
 
-print(str(pathlib.Path(__file__).parent)+'/data/ODmatrix.csv')
-my_data = genfromtxt(str(pathlib.Path(__file__).parent)+'/data/ODmatrix.csv', delimiter=',')
-print(my_data)
+network = get_toy_network('siouxfalls')
+g = relabel_graph(network)
+show_network(g, euclidean=True)

@@ -25,20 +25,14 @@ from dyntapy.demand import (
 
 from ownFunctions import makeOwnToyNetwork, getODGraph
 from greenTimes import websterGreenTimes
-from aidFunctions import getNodeSummary
 
-
-
-#main function where we merge everything together
-def main():
-    g, ODcentroids = makeOwnToyNetwork()
-    ODMatrix = str(pathlib.Path(__file__).parent)+'/data/ODmatrix.csv'
-    odGraph = getODGraph(ODMatrix, ODcentroids)
-    assignment = StaticAssignment(g, odGraph)
-    result = assignment.run('msa')
-    show_network(g,flows = result.flows, euclidean = True)
-    network = build_network(g)
-    getNodeSummary(network)
-    costs, flows, gap_definition, gap = msa_flow_averaging(network, build_internal_static_demand(odGraph), False)
-
-main()
+def getNodeSummary(network):
+    xcoord = network.nodes.x_coord
+    ycoord = network.nodes.y_coord
+    tot_in_links = network.nodes.tot_in_links
+    for i in range(len(xcoord)):
+        if network.nodes.is_centroid[i]:
+            extra = ' is Centroid'
+        else:
+            extra = ""
+        print('x coord '+str(xcoord[i])+' y coord '+str(ycoord[i])+' outgoing links '+str(tot_in_links[i])+extra)
