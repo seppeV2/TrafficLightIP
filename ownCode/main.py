@@ -37,12 +37,16 @@ def main():
     odGraph = getODGraph(ODMatrix, ODcentroids)
     assignment = GreenStaticAssignment(g, odGraph)
     result = assignment.run('msa')
+
+
+
+    
     #show_network(g,flows = result.flows, euclidean = True)
-    network = build_network(g)
-    getIntersections(network)
+    #network = build_network(g)
+    #getIntersections(network)
     #getNodeSummary(network)
-    staticDemand = build_internal_static_demand(odGraph)
-    costs, flows, gap_definition, gap = msa_flow_averaging(network, staticDemand, False)
+    #staticDemand = build_internal_static_demand(odGraph)
+    #costs, flows, gap_definition, gap = msa_flow_averaging(network, staticDemand, False)
 
 
 

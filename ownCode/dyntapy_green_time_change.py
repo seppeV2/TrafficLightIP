@@ -10,7 +10,7 @@ from dyntapy.results import StaticResult, get_skim
 from dyntapy._context import iteration_states
 from dyntapy.assignments import StaticAssignment
 
-from ownFunctions import __bpr_green_cost, getIntersections, calculate_cost
+from ownFunctions import getIntersections, calculate_cost
 from greenTimes import websterGreenTimes
 
 import networkx
@@ -123,26 +123,24 @@ def msa_green_flow_averaging(
     f1 = np.zeros(network.tot_links)
     f2 = f1.copy()
     ff_tt = network.links.length / network.links.free_speed
-    intersections = getIntersections(network)
+    intersections, linkDic = getIntersections(network)
     while not converged:
         k = k + 1
         if k == 1:
-            #print(websterGreenTimes(network.links.capacity,ff_tt,f2))
             costs = calculate_cost(
-                capacities=network.links.capacity,
+                caps=network.links.capacity,
                 ff_tts=ff_tt,
                 flows=f2,
-                intersections = intersections
-                #g_times = websterGreenTimes(network.links.capacity,ff_tt,f2),
+                intersections = intersections,
+                network = network
             )
         else:
-            #print(websterGreenTimes(network.links.capacity,ff_tt,f2))
             costs = calculate_cost(
-                capacities=network.links.capacity,
+                caps=network.links.capacity,
                 ff_tts=ff_tt,
                 flows=f2,
-                intersections = intersections
-                #g_times = websterGreenTimes(network.links.capacity,ff_tt,f2),
+                intersections = intersections,
+                network = network
             )
         ssp_costs, f2 = aon(demand, costs, network)
         # print("done")
