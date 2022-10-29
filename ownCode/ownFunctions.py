@@ -128,9 +128,6 @@ bpr_a = parameters.static_assignment.bpr_alpha
 
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
-    if 0 == all(g_time):
-        return __bpr_cost_single(flow, capacity, ff_tt)
-    else:
         return 1.0 * ff_tt + np.multiply(bpr_a, pow(flow / (capacity*g_time), bpr_b)) * ff_tt
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost

@@ -32,16 +32,19 @@ from dyntapy_green_time_change import GreenStaticAssignment
 
 #main function where we merge everything together
 def main():
+    #setup
     g, ODcentroids = makeOwnToyNetwork()
     ODMatrix = str(pathlib.Path(__file__).parent)+'/data/ODmatrix.csv'
     odGraph = getODGraph(ODMatrix, ODcentroids)
     assignment = GreenStaticAssignment(g, odGraph)
-    result = assignment.run('msa')
-
-
-
+    #initial msa without traffic lights
+    first = assignment.run('msa')
+    #run with traffic lights
+    #result = assignment.runTraffic('msa',previous_flow = first.flows)
     
-    #show_network(g,flows = result.flows, euclidean = True)
+
+
+    show_network(g,flows = first.flows, euclidean = True)
     #network = build_network(g)
     #getIntersections(network)
     #getNodeSummary(network)

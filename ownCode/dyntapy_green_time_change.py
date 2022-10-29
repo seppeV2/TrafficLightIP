@@ -40,7 +40,8 @@ msa_delta = parameters.static_assignment.msa_delta
 
 class GreenStaticAssignment(StaticAssignment):
 
-    def run(self, method, store_iterations=False, **kwargs):
+
+    def runTraffic(self, method, store_iterations=False, previous_flow=False, **kwargs):
        
         dyntapy._context.running_assignment = (
             self  # making the current assignment available as global var
@@ -64,7 +65,7 @@ class GreenStaticAssignment(StaticAssignment):
             )
         elif method == "msa":
             costs, flows, gap_definition, gap = msa_green_flow_averaging(
-                self.internal_network, self.internal_demand, store_iterations
+                self.internal_network, self.internal_demand, store_iterations, previous_flow
             )
             result = StaticResult(
                 costs,
@@ -115,24 +116,28 @@ class GreenStaticAssignment(StaticAssignment):
 
 
 def msa_green_flow_averaging(
-    network: Network, demand: InternalStaticDemand, store_iterations=False
+    network: Network, demand: InternalStaticDemand, store_iterations=False, previous_flow = None
 ):
     gaps = []
     converged = False
     k = int(0)
-    f1 = np.zeros(network.tot_links)
+    if previous_flow is not None:
+        f1 = previous_flow
+    else:
+        f1 = np.zeros(network.tot_links)
     f2 = f1.copy()
     ff_tt = network.links.length / network.links.free_speed
     intersections, linkDic = getIntersections(network)
     while not converged:
+        print(f2)
         k = k + 1
         if k == 1:
-            costs = calculate_cost(
-                caps=network.links.capacity,
+            costs = __bpr_cost(
+                capacities=network.links.capacity,
                 ff_tts=ff_tt,
                 flows=f2,
-                intersections = intersections,
-                network = network
+                #intersections = intersections,
+                #network = network
             )
         else:
             costs = calculate_cost(

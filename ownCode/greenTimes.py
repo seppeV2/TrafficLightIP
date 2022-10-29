@@ -3,19 +3,20 @@
 
 
 def websterGreenTimes(caps,flows):
-    if 0 == all(flows):
-        return flows
-        #L=0 assumption for now
-    else:
-        L = 0
-        y = [i / j for i, j in zip(flows, caps)]
-        ytot = sum(y)
-        c0 = (1.5*L+5)/(1-ytot)
-        coef = (c0-L)/ytot
-        g_times = []
-        for i in range(len(y)):
-            g_times.append(coef*y[i])
-        return g_times
+    L = 0
+    y = [i / j for i, j in zip(flows, caps)]
+    ytot = sum(y)
+    c0 = (1.5*L+5)/(1-ytot)
+    coef = (c0-L)/ytot
+    g_times = []
+    for i in range(len(y)):
+        g_times.append(coef*y[i])
+
+    total = sum(g_times)
+    for i in range(len(g_times)):
+        g_times[i] = g_times[i]/total
+    print(g_times)
+    return g_times
 
 
 def P0policyGreenTimes():
