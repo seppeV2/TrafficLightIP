@@ -71,7 +71,7 @@ def makeOwnToyNetwork():
         ( 800, 80),
         ( 400, 80),
         ( 800, 80),
-        ( 400, 80),
+        ( 300, 80),
         ( 800, 80),
         ( 1200, 80),
         ( 1500, 80),
@@ -126,8 +126,19 @@ def getODGraph(ODMatrix, ODcentroids):
 bpr_b = parameters.static_assignment.bpr_beta
 bpr_a = parameters.static_assignment.bpr_alpha
 
+def __bpr_green_cost(flows, capacities, ff_tts, g_times):
+    number_of_links = len(flows)
+    costs = np.empty(number_of_links, dtype=np.float64)
+    for it, (f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
+        assert c != 0
+        costs[it] = __bpr_green_cost_single(f, c, ff_tt,g_time)
+    return costs
+
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
+    if g_time == 0:
+        return 100000
+    else:
         return 1.0 * ff_tt + np.multiply(bpr_a, pow(flow / (capacity*g_time), bpr_b)) * ff_tt
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost
@@ -142,33 +153,31 @@ def getIntersections(network):
             arrivingLinks[str(network.links.to_node[i])] +=1
             if network.links.to_node[i] not in intersections:
                 intersections.append(network.links.to_node[i])
-    return intersections,arrivingLinks
+    return intersections
 
 
-def calculate_cost(caps, ff_tts, flows, intersections, network):
+def get_green_times(caps, flows, network):
     #first use a dictionary so we can order the costs to the right links after 
-    costsDic = {}
+    intersections = getIntersections(network)
+    greenDic = {}
     for i in range(len(caps)):
         if network.links.to_node[i] not in intersections:
-            costsDic[i]=(__bpr_cost_single(flows[i],caps[i],ff_tts[i]))
+            if i not in greenDic.keys():
+                greenDic[i]= 1
         else:
             #first store all the data in an array of arrays per link
             intersectionLinksFlows = []
             intersectionCaps = []
-            intersection_ff_tts = []
             intersectionLinkIDs = []
             for j in range(i,len(caps)):
                 if network.links.to_node[j] == network.links.to_node[i]:
                     intersectionLinksFlows.append(flows[j])
                     intersectionCaps.append(caps[j])
-                    intersection_ff_tts.append(ff_tts[j])
                     intersectionLinkIDs.append(j)
             intersections.remove(network.links.to_node[i])
             greenTimes = websterGreenTimes(intersectionCaps, intersectionLinksFlows)
-            #now assign green time cost to the index
             for j in range(len(greenTimes)):
-                costsDic[intersectionLinkIDs[j]] = __bpr_green_cost_single(intersectionLinksFlows[j],intersectionCaps[j], intersection_ff_tts[j],greenTimes[j])
-    sortedDic = dict(sorted(costsDic.items()))
-    return list(sortedDic.values())
+                greenDic[intersectionLinkIDs[j]] = greenTimes[j]
+    return dict(sorted(greenDic.items()))
                 
     

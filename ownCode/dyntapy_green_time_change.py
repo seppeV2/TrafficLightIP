@@ -10,7 +10,7 @@ from dyntapy.results import StaticResult, get_skim
 from dyntapy._context import iteration_states
 from dyntapy.assignments import StaticAssignment
 
-from ownFunctions import getIntersections, calculate_cost
+from ownFunctions import getIntersections, __bpr_green_cost
 from greenTimes import websterGreenTimes
 
 import networkx
@@ -40,73 +40,28 @@ msa_delta = parameters.static_assignment.msa_delta
 
 class GreenStaticAssignment(StaticAssignment):
 
-
-    def runTraffic(self, method, store_iterations=False, previous_flow=False, **kwargs):
+    def run_greens(self, method, greenTimes ,store_iterations=False, previous_flow=False, **kwargs):
        
         dyntapy._context.running_assignment = (
             self  # making the current assignment available as global var
         )
         # assignment needs to return at least link_cost and flows, ideally also
         # multi-commodity (origin, destination or origin-destination)
-        if method == "dial_b":
-            costs, origin_flows, gap_definition, gap = dial_b(
-                self.internal_network, self.internal_demand, store_iterations
-            )
-            flows = np.sum(origin_flows, axis=0)
-            result = StaticResult(
-                costs,
-                flows,
-                self.internal_demand.origins,
-                self.internal_demand.destinations,
-                skim=get_skim(costs, self.internal_demand, self.internal_network),
-                gap_definition=gap_definition,
-                gap=gap,
-                origin_flows=origin_flows,
-            )
-        elif method == "msa":
-            costs, flows, gap_definition, gap = msa_green_flow_averaging(
-                self.internal_network, self.internal_demand, store_iterations, previous_flow
-            )
-            result = StaticResult(
-                costs,
-                flows,
-                self.internal_demand.origins,
-                self.internal_demand.destinations,
-                skim=get_skim(costs, self.internal_demand, self.internal_network),
-                gap_definition=gap_definition,
-                gap=gap,
-            )
-        elif method == "sun":
-            assert not store_iterations
-            # no iterations in uncongested assignments
-            costs, flows, origin_flows = sun(
-                self.internal_network, self.internal_demand
-            )
-            result = StaticResult(
-                costs,
-                flows,
-                self.internal_demand.origins,
-                self.internal_demand.destinations,
-                skim=get_skim(costs, self.internal_demand, self.internal_network),
-                origin_flows=origin_flows,
-            )
-        elif method == "sue":
-            assert not store_iterations  # not supported for SUE yet
-            # check for turn connectors, they are required since this algorithm
-            # is defined on the line graph
-            assert _turn_connectors(self.internal_network)
-            costs, flows, destination_flows = dial_sue(
-                network=self.internal_network, demand=self.internal_demand, **kwargs
-            )
-            result = StaticResult(
-                costs,
-                flows,
-                self.internal_demand.origins,
-                self.internal_demand.destinations,
-                skim=get_skim(costs, self.internal_demand, self.internal_network),
-                destination_flows=destination_flows,
-            )
 
+        if method == "msa":
+            costs, flows, gap_definition, gap = msa_green_flow_averaging(
+                self.internal_network, self.internal_demand, greenTimes ,store_iterations, 
+            )
+            result = StaticResult(
+                costs,
+                flows,
+                self.internal_demand.origins,
+                self.internal_demand.destinations,
+                skim=get_skim(costs, self.internal_demand, self.internal_network),
+                gap_definition=gap_definition,
+                gap=gap,
+            )
+       
         else:
             raise NotImplementedError(f"{method=} is not defined ")
         if not store_iterations:
@@ -116,36 +71,30 @@ class GreenStaticAssignment(StaticAssignment):
 
 
 def msa_green_flow_averaging(
-    network: Network, demand: InternalStaticDemand, store_iterations=False, previous_flow = None
+    network: Network, demand: InternalStaticDemand, greenTimesDic: dict ,store_iterations=False
 ):
     gaps = []
     converged = False
     k = int(0)
-    if previous_flow is not None:
-        f1 = previous_flow
-    else:
-        f1 = np.zeros(network.tot_links)
+    f1 = np.zeros(network.tot_links)
     f2 = f1.copy()
     ff_tt = network.links.length / network.links.free_speed
-    intersections, linkDic = getIntersections(network)
+    greenTimes = list(greenTimesDic.values())
     while not converged:
-        print(f2)
         k = k + 1
         if k == 1:
-            costs = __bpr_cost(
+            costs = __bpr_green_cost(
                 capacities=network.links.capacity,
                 ff_tts=ff_tt,
                 flows=f2,
-                #intersections = intersections,
-                #network = network
+                g_times = greenTimes
             )
         else:
-            costs = calculate_cost(
-                caps=network.links.capacity,
+            costs = __bpr_green_cost(
+                capacities=network.links.capacity,
                 ff_tts=ff_tt,
                 flows=f2,
-                intersections = intersections,
-                network = network
+                g_times = greenTimes
             )
         ssp_costs, f2 = aon(demand, costs, network)
         # print("done")
