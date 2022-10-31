@@ -22,15 +22,17 @@ def makeOwnToyNetwork():
     ebunch_of_nodes = [
         (1, {"x_coord": 10, "y_coord": 35}),
         (2, {"x_coord": 25, "y_coord": 35}),
-        (3, {"x_coord": 35, "y_coord": 50}),
+        (3, {"x_coord": 35, "y_coord": 50}),#
         (4, {"x_coord": 35, "y_coord": 20}),
-        (5, {"x_coord": 55 , "y_coord": 50}),
+        (5, {"x_coord": 55 , "y_coord": 50}),#
         (6, {"x_coord": 55, "y_coord": 20}),
         (7, {"x_coord": 65 , "y_coord": 35}),
         (8, {"x_coord": 80 , "y_coord": 35}),
         (9, {"x_coord": 75 , "y_coord": 0}),
         (10, {"x_coord": 15 , "y_coord": 0}),
         (11, {"x_coord": 30 , "y_coord": 15}),
+        (12, {"x_coord": 60 , "y_coord": 40}),#
+         (13, {"x_coord": 75 , "y_coord": 45}),
     
     ]
 
@@ -41,7 +43,6 @@ def makeOwnToyNetwork():
         (2, 4),
         (3, 5),
         (4, 6),
-        (5, 7),
         (6, 7),
         (7, 8),
         (8, 9),
@@ -49,6 +50,10 @@ def makeOwnToyNetwork():
         (10, 1),
         (11, 4),
         (4, 11),
+        (5, 12),
+        (12, 7),
+        (12,13),
+        (13,8),
     ]
 
     bottle_neck_edges = [
@@ -57,12 +62,15 @@ def makeOwnToyNetwork():
         (2, 4),
         (3, 5),
         (4, 6),
-        (5, 7),
         (6, 7),
         (7, 8),
         (8, 9),
         (9, 10),
         (10, 1),
+        (5,12),
+        (12,7),
+        (12,13),
+        (13,8),
     ]
 
     bottle_neck_capacity_speed =   [
@@ -71,12 +79,15 @@ def makeOwnToyNetwork():
         ( 800, 80),
         ( 400, 80),
         ( 800, 80),
-        ( 300, 80),
         ( 800, 80),
         ( 1200, 80),
         ( 1500, 80),
         ( 1500, 80),
         ( 1500, 80),
+        ( 300, 80),
+        ( 200, 80),
+        (300,80),
+        (300,80),
     ]
     g.add_edges_from(ebunch_of_edges)
     set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
@@ -88,7 +99,7 @@ def makeOwnToyNetwork():
    
     # are the first elements
     #show_network(g, euclidean=True)
-    ODcentroids = np.array([np.array([10,25,35,35,55,55,65,80,75,15,30]), np.array([35,35,50,20,50,20,35,35,0,0,15])])
+    ODcentroids = np.array([np.array([10,25,35,35,55,55,65,80,75,15,30,60,75]), np.array([35,35,50,20,50,20,35,35,0,0,15,40,45])])
     #g = add_centroids(g,ODcentroids[0], ODcentroids[1], k=1, method='turn', euclidean=True, name = ['Origin', 'Destination', 'origin2'])
     g = relabel_graph(g)  # adding link and node ids, connectors and centroids
     return g, ODcentroids
@@ -139,7 +150,9 @@ def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
     if g_time == 0:
         return 100000
     else:
-        return 1.0 * ff_tt + np.multiply(bpr_a, pow(flow / (capacity*g_time), bpr_b)) * ff_tt
+        #enlarged the cost for green time to see significant difference 
+        cost = 1.0 * ff_tt + np.multiply(bpr_a, pow(flow / np.multiply(capacity,np.multiply(g_time,0.001)), bpr_b)) * ff_tt
+        return cost
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost
 #function (including the green times)

@@ -46,7 +46,7 @@ def main():
     print('flows: '+str(result.flows))
     greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network)
     print('greens: '+ str(greens))
-    
+    show_network(g, flows = result.flows, euclidean=True)
     #start the loop
     print('START THE LOOP')
         #initialise parameters and variables
@@ -62,7 +62,7 @@ def main():
         print('flows: '+str(newResult.flows))
         print('greens: '+ str(newGreens))
         #calculating the gap 
-        gap = sum([abs(gi - gj) for gi, gj in zip(greens, newGreens)])
+        gap = sum([abs(gi - gj) for gi, gj in zip(result.flows, newResult.flows)])
         print('Gap = '+ str(gap))
         result = newResult
         greens = newGreens
