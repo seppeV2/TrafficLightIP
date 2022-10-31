@@ -1,0 +1,9 @@
+In this file questions are written: 
+
+1) What are centroids why are they used and whats the different with a node? 
+2) Can you make from an existing node a centroid? 
+3) Is there a better way to say what intersections are intersections with traffic lights? 
+4) Are the assumptions made in the green time calculations okay? 
+	setting gi to zero when flowi is zero (otherwise devide by zero error)
+5) is it okay to put a very large cost to the link when green time is zero? 
+	If not this will give divide by zero errors  
