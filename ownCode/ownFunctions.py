@@ -17,92 +17,131 @@ from dyntapy.sta.utilities import aon, __bpr_cost_single
 
 from greenTimes import websterGreenTimes
 #building our own two rout DiGraph route (using nodes)
-def makeOwnToyNetwork():
-    g = nx.DiGraph()
-    ebunch_of_nodes = [
-        (1, {"x_coord": 10, "y_coord": 35}),
-        (2, {"x_coord": 25, "y_coord": 35}),
-        (3, {"x_coord": 35, "y_coord": 50}),#
-        (4, {"x_coord": 35, "y_coord": 20}),
-        (5, {"x_coord": 55 , "y_coord": 50}),#
-        (6, {"x_coord": 55, "y_coord": 20}),
-        (7, {"x_coord": 65 , "y_coord": 35}),
-        (8, {"x_coord": 80 , "y_coord": 35}),
-        (9, {"x_coord": 75 , "y_coord": 0}),
-        (10, {"x_coord": 15 , "y_coord": 0}),
-        (11, {"x_coord": 30 , "y_coord": 15}),
-        (12, {"x_coord": 60 , "y_coord": 40}),#
-         (13, {"x_coord": 75 , "y_coord": 45}),
+def makeOwnToyNetwork(form):
+    if form == 'complex':
+        g = nx.DiGraph()
+        ebunch_of_nodes = [
+            (1, {"x_coord": 10, "y_coord": 35}),
+            (2, {"x_coord": 25, "y_coord": 35}),
+            (3, {"x_coord": 35, "y_coord": 50}),#
+            (4, {"x_coord": 35, "y_coord": 20}),
+            (5, {"x_coord": 55 , "y_coord": 50}),#
+            (6, {"x_coord": 55, "y_coord": 20}),
+            (7, {"x_coord": 65 , "y_coord": 35}),
+            (8, {"x_coord": 80 , "y_coord": 35}),
+            (9, {"x_coord": 75 , "y_coord": 0}),
+            (10, {"x_coord": 15 , "y_coord": 0}),
+            (11, {"x_coord": 30 , "y_coord": 15}),
+            (12, {"x_coord": 60 , "y_coord": 40}),#
+            (13, {"x_coord": 75 , "y_coord": 45}),
+        
+        ]
+
+        g.add_nodes_from(ebunch_of_nodes)
+        ebunch_of_edges = [
+            (1, 2),
+            (2, 3),
+            (2, 4),
+            (3, 5),
+            (4, 6),
+            (6, 7),
+            (7, 8),
+            (8, 9),
+            (9, 10),
+            (10, 1),
+            (11, 4),
+            (4, 11),
+            (5, 12),
+            (12, 7),
+            (12,13),
+            (13,8),
+        ]
+
+        bottle_neck_edges = [
+            (1, 2),
+            (2, 3),
+            (2, 4),
+            (3, 5),
+            (4, 6),
+            (6, 7),
+            (7, 8),
+            (8, 9),
+            (9, 10),
+            (10, 1),
+            (5,12),
+            (12,7),
+            (12,13),
+            (13,8),
+        ]
+
+        bottle_neck_capacity_speed =   [
+            (1200, 80),
+            (400, 80),
+            ( 800, 80),
+            ( 400, 80),
+            ( 800, 80),
+            ( 800, 80),
+            ( 1200, 80),
+            ( 1500, 80),
+            ( 1500, 80),
+            ( 1500, 80),
+            ( 300, 80),
+            ( 200, 80),
+            (300,80),
+            (300,80),
+        ]
+        g.add_edges_from(ebunch_of_edges)
+        set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
+
     
-    ]
+        ODcentroids = np.array([np.array([10,25,35,35,55,55,65,80,75,15,30,60,75]), np.array([35,35,50,20,50,20,35,35,0,0,15,40,45])])
+        g = relabel_graph(g)  # adding link and node ids, connectors and centroids
+        odCsvFile = 'ODmatrixComplex.csv'
+        return g, ODcentroids, odCsvFile
+    elif form == 'simple':
+        g = nx.DiGraph()
+        ebunch_of_nodes = [
+            (0, {"x_coord": 0, "y_coord": 30}),
+            (1, {"x_coord": 5, "y_coord": 30}),
+            (2, {"x_coord": 20, "y_coord": 5}),
+            (3, {"x_coord": 35, "y_coord": 30}),
+            (4, {"x_coord": 50, "y_coord": 30}),
+        ]
+        g.add_nodes_from(ebunch_of_nodes)
 
-    g.add_nodes_from(ebunch_of_nodes)
-    ebunch_of_edges = [
-        (1, 2),
-        (2, 3),
-        (2, 4),
-        (3, 5),
-        (4, 6),
-        (6, 7),
-        (7, 8),
-        (8, 9),
-        (9, 10),
-        (10, 1),
-        (11, 4),
-        (4, 11),
-        (5, 12),
-        (12, 7),
-        (12,13),
-        (13,8),
-    ]
+        ebunch_of_edges = [
+            (0, 1),
+            (1, 3),
+            (3, 4),
+            (1, 2),
+            (2, 3),
+        ]
 
-    bottle_neck_edges = [
-        (1, 2),
-        (2, 3),
-        (2, 4),
-        (3, 5),
-        (4, 6),
-        (6, 7),
-        (7, 8),
-        (8, 9),
-        (9, 10),
-        (10, 1),
-        (5,12),
-        (12,7),
-        (12,13),
-        (13,8),
-    ]
+        bottle_neck_edges = [
+            (0, 1),
+            (1, 3),
+            (3, 4),
+            (1, 2),
+            (2, 3),
+        ]
 
-    bottle_neck_capacity_speed =   [
-        (1200, 80),
-        (400, 80),
-        ( 800, 80),
-        ( 400, 80),
-        ( 800, 80),
-        ( 800, 80),
-        ( 1200, 80),
-        ( 1500, 80),
-        ( 1500, 80),
-        ( 1500, 80),
-        ( 300, 80),
-        ( 200, 80),
-        (300,80),
-        (300,80),
-    ]
-    g.add_edges_from(ebunch_of_edges)
-    set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
+        bottle_neck_capacity_speed =   [
+            (600, 80),
+            (100, 80),
+            (600, 80),
+            (150, 80),
+            (150, 80),
+        ]
 
-    centroid_x = np.array([65])
-    centroid_y = np.array([35])
-    #g = add_centroids(g, centroid_x, centroid_y, k=3, method='link', euclidean=True, name = ['FirstIntersection'])
-    # also adds connectors automatically
-   
-    # are the first elements
-    #show_network(g, euclidean=True)
-    ODcentroids = np.array([np.array([10,25,35,35,55,55,65,80,75,15,30,60,75]), np.array([35,35,50,20,50,20,35,35,0,0,15,40,45])])
-    #g = add_centroids(g,ODcentroids[0], ODcentroids[1], k=1, method='turn', euclidean=True, name = ['Origin', 'Destination', 'origin2'])
-    g = relabel_graph(g)  # adding link and node ids, connectors and centroids
-    return g, ODcentroids
+        g.add_edges_from(ebunch_of_edges)
+        set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
+
+        ODcentroids = np.array([np.array([0,5,20,35,50]), np.array([30,30,5,30,30])])
+        g = relabel_graph(g)  # adding link and node ids, connectors and centroids
+        odCsvFile = 'ODmatrixSimple.csv'
+        return g, ODcentroids, odCsvFile
+
+
 
 #modified dyntapy function to change the capacity and the speed of each link
 def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed):
@@ -147,12 +186,9 @@ def __bpr_green_cost(flows, capacities, ff_tts, g_times):
 
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
-    if g_time == 0:
-        return 100000
-    else:
-        #enlarged the cost for green time to see significant difference 
-        cost = 1.0 * ff_tt + np.multiply(bpr_a, pow(flow / np.multiply(capacity,np.multiply(g_time,0.001)), bpr_b)) * ff_tt
-        return cost
+    #enlarged the cost for green time to see significant difference 
+    cost = 1.0 * ff_tt + np.multiply(bpr_a, pow((flow / (capacity * g_time * 0.01)), bpr_b)) * ff_tt
+    return cost
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost
 #function (including the green times)
