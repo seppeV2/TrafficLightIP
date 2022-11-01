@@ -103,15 +103,17 @@ def makeOwnToyNetwork(form):
         ebunch_of_nodes = [
             (0, {"x_coord": 0, "y_coord": 30}),
             (1, {"x_coord": 5, "y_coord": 30}),
-            (2, {"x_coord": 20, "y_coord": 5}),
+            (2, {"x_coord": 20, "y_coord": 15}),
             (3, {"x_coord": 35, "y_coord": 30}),
             (4, {"x_coord": 50, "y_coord": 30}),
+            (5, {"x_coord": 20, "y_coord": 45}),
         ]
         g.add_nodes_from(ebunch_of_nodes)
 
         ebunch_of_edges = [
             (0, 1),
-            (1, 3),
+            (1, 5),
+            (5, 3),
             (3, 4),
             (1, 2),
             (2, 3),
@@ -119,7 +121,8 @@ def makeOwnToyNetwork(form):
 
         bottle_neck_edges = [
             (0, 1),
-            (1, 3),
+            (1, 5),
+            (5, 3),
             (3, 4),
             (1, 2),
             (2, 3),
@@ -127,16 +130,17 @@ def makeOwnToyNetwork(form):
 
         bottle_neck_capacity_speed =   [
             (600, 80),
-            (100, 80),
+            (150, 80),
+            (150, 80),
             (600, 80),
-            (150, 80),
-            (150, 80),
+            (100, 80),
+            (100, 80),
         ]
 
         g.add_edges_from(ebunch_of_edges)
         set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
 
-        ODcentroids = np.array([np.array([0,5,20,35,50]), np.array([30,30,5,30,30])])
+        ODcentroids = np.array([np.array([0,5,20,35,50,20]), np.array([30,30,15,30,30,45])])
         g = relabel_graph(g)  # adding link and node ids, connectors and centroids
         odCsvFile = 'ODmatrixSimple.csv'
         return g, ODcentroids, odCsvFile
@@ -187,7 +191,9 @@ def __bpr_green_cost(flows, capacities, ff_tts, g_times):
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
     #enlarged the cost for green time to see significant difference 
-    cost = 1.0 * ff_tt + np.multiply(bpr_a, pow((flow / (capacity * g_time * 0.01)), bpr_b)) * ff_tt
+    #print('bpr normal cost :\t'+str(__bpr_cost_single(flow, capacity, ff_tt)))
+    cost = 1.0 * ff_tt + np.multiply(bpr_a, pow((flow / (capacity * g_time )), bpr_b)) * ff_tt
+    #print('bpr green time cost:\t'+str(cost)+'\n')
     return cost
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost

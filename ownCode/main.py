@@ -51,6 +51,7 @@ def main():
 
 
     #initial msa without traffic lights
+    result2 = assignment.run('msa')
     result = assignment.run_greens('msa', firstGreen)
     #calculate the first green times according the first static assignment
     print('flows: '+str(result.flows))
@@ -62,6 +63,7 @@ def main():
     for i in greens.keys():
         greens2[i] = (greens[i],)
     show_network(g, flows = result.flows, euclidean=True)
+    show_network(g, flows = result2.flows, euclidean = True)
     #start the loop
     print('START THE LOOP')
         #initialise parameters and variables
