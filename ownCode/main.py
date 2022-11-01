@@ -1,7 +1,9 @@
 import networkx as nx
 import numpy as np
 import pathlib
+import operator
 import dyntapy
+import matplotlib.pyplot as plt
 
 from dyntapy import show_network, add_centroids, relabel_graph, show_demand, \
     add_connectors
@@ -54,6 +56,11 @@ def main():
     print('flows: '+str(result.flows))
     greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network)
     print('greens: '+ str(greens))
+    culGreensPerIntersection = ()
+    #greens2 = {0:(greens[0]),1:(greens[1]),2:(greens[2])}
+    greens2 = {}
+    for i in greens.keys():
+        greens2[i] = (greens[i],)
     show_network(g, flows = result.flows, euclidean=True)
     #start the loop
     print('START THE LOOP')
@@ -73,7 +80,31 @@ def main():
         gap = sum([abs(gi - gj) for gi, gj in zip(result.flows, newResult.flows)])
         print('Gap = '+ str(gap))
         result = newResult
+        for i in greens.keys():
+            greens2[i] += (newGreens[i],)
         greens = newGreens
+        if safety ==70:
+            show_network(g, flows=result.flows, euclidean=True)
+
+    #to visualize the green times over the links automatically
+    for i in greens2.keys():
+        x = np.linspace(1,len(greens2[i]),len(greens2[i]))
+        y = list(greens2[i])
+        plt.plot(x,y,label=str(i))
+    plt.title("Green times of different links over the iterations")
+    plt.legend()
+    plt.show()
+
+    #to plot the green times of the two routes of a simple network
+    #don't know if it's correct to sum the green times cuz they are fractions actually
+    x = np.linspace(1,len(greens2[0]), len(greens2[0]))
+    y1 = tuple(map(sum,zip(greens2[0],greens2[1],greens2[4])))
+    y2 = tuple(map(sum,zip(greens2[0],greens2[2],greens2[3],greens2[4])))
+    plt.plot(x,y1,label = "Route 1")
+    plt.plot(x,y2, label = "Route 2")
+    plt.legend()
+    plt.title("Summation of route green times")
+    plt.show()
 
     show_network(g, flows = result.flows, euclidean=True)
 
