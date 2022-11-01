@@ -38,7 +38,7 @@ def websterGreenTimes(caps, flows):
     #add the zeros where the flow is zero
     for i in range(len(zero_flow)):
         g_times.insert(zero_flow[i],0.01)
-
+    print('greens times in webster loop= '+str(g_times))
     return g_times
 
 
