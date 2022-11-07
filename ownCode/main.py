@@ -58,21 +58,25 @@ def main():
     print('greensWebster: '+ str(greens))
     greens2 = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'P0')
     print('greensP0: '+ str(greens))
-    show_network(g, flows = result.flows, euclidean=True)
+    #show_network(g, flows = result.flows, euclidean=True)
             #show_network(g, flows = result2.flows, euclidean = True)
     #start the loop
     print('START THE LOOP')
         #initialise parameters and variables
     delta = 0.001
-    maxLoops = 1000
+    maxLoops = 250
     safety = 0
     gap = 1
     flows_gap = []
     greens_gap = []
+    cost_link_a = [result.link_costs[0]]
+    cost_link_b = [result.link_costs[3]]
     while gap > delta and safety < maxLoops:
         safety += 1
         print('loop = '+str(safety))
         newResult = assignment.run_greens('msa', greens)
+        cost_link_a.append(newResult.link_costs[0])
+        cost_link_b.append(newResult.link_costs[3])
         newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, 'webster')
         print('flows: '+str(newResult.flows))
         print('greens: '+ str(newGreens))
@@ -86,7 +90,23 @@ def main():
         greens = newGreens
 
     show_network(g, flows = result.flows, euclidean=True)
+
+    ## graph plots 
+    plt.figure()
     plt.plot(flows_gap)
+    plt.title('Evolution of the gap during the iterations')
+    plt.show()
+
+    plt.figure()
+    plt.plot(cost_link_a)
+    plt.plot(cost_link_b)
+    plt.title('Evolution of the link costs on the two intersection links')
+    plt.legend(['link 0','link 3'])
+    plt.show()
+
+
+    #plt.plot(greens_gap)
+    #plt.show()
 
 
 
