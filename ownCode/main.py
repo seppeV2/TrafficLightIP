@@ -100,8 +100,8 @@ def main():
     #to plot the green times of the two routes of a simple network
     #don't know if it's correct to sum the green times cuz they are fractions actually
     x = np.linspace(1,len(greens2[0]), len(greens2[0]))
-    y1 = tuple(map(sum,zip(greens2[0],greens2[1],greens2[4])))
-    y2 = tuple(map(sum,zip(greens2[0],greens2[2],greens2[3],greens2[4])))
+    y1 = tuple(map(sum,zip(greens2[0],greens2[1],greens2[5]),greens2[4]))
+    y2 = tuple(map(sum,zip(greens2[0],greens2[2],greens2[3],greens2[5])))
     plt.plot(x,y1,label = "Route 1")
     plt.plot(x,y2, label = "Route 2")
     plt.legend()
