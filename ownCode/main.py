@@ -54,17 +54,19 @@ def main():
     result = assignment.run_greens('msa', firstGreen)
     #calculate the first green times according the first static assignment
     print('flows: '+str(result.flows))
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'webster')
-    print('greensWebster: '+ str(greens))
-    greens2 = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'P0')
-    print('greensP0: '+ str(greens))
-    #show_network(g, flows = result.flows, euclidean=True)
+    #greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'webster', firstGreen)
+    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'P0', firstGreen)
+    print('greens: '+ str(greens))
+
+
+    #print('greensP0: '+ str(greens2))
+    show_network(g, flows = result.flows, euclidean=True)
             #show_network(g, flows = result2.flows, euclidean = True)
     #start the loop
     print('START THE LOOP')
         #initialise parameters and variables
     delta = 0.001
-    maxLoops = 250
+    maxLoops = 25
     safety = 0
     gap = 1
     flows_gap = []
@@ -76,8 +78,8 @@ def main():
         print('loop = '+str(safety))
         newResult = assignment.run_greens('msa', greens)
         cost_link_a.append(newResult.link_costs[0])
-        cost_link_b.append(newResult.link_costs[3])
-        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, 'webster')
+        cost_link_b.append(newResult.link_costs[3]+newResult.link_costs[1])
+        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, 'P0', greens)
         print('flows: '+str(newResult.flows))
         print('greens: '+ str(newGreens))
         #calculating the gap 
@@ -104,9 +106,6 @@ def main():
     plt.legend(['link 0','link 3'])
     plt.show()
 
-
-    #plt.plot(greens_gap)
-    #plt.show()
 
 
 

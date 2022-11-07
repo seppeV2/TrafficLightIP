@@ -13,7 +13,7 @@ from dyntapy.settings import parameters
 from dyntapy.demand import build_internal_static_demand, \
     build_internal_dynamic_demand, DynamicDemand, SimulationTime
 from osmnx.distance import euclidean_dist_vec
-from dyntapy.sta.utilities import aon, __bpr_cost_single
+from dyntapy.sta.utilities import aon
 
 from greenTimes import websterGreenTimes,P0policyGreenTimes
 #building our own two rout DiGraph route (using nodes)
@@ -187,7 +187,7 @@ def __bpr_green_cost(flows, capacities, ff_tts, g_times):
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
 
-    cost = 1.0 * ff_tt + np.multiply(10, pow((flow / (capacity )), bpr_b))*pow(1/g_time, bpr_b) * ff_tt
+    cost = 1.0 * ff_tt + np.multiply(bpr_a, pow((flow / (capacity )), bpr_b))*pow(1/g_time, bpr_b) * ff_tt
     return cost
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost
@@ -205,7 +205,7 @@ def getIntersections(network):
     return intersections
 
 
-def get_green_times(caps, flows, network, type):
+def get_green_times(caps, flows, network, method, oldGreenTimesDic):
     #first use a dictionary so we can order the costs to the right links after 
     intersections = getIntersections(network)
     greenDic = {}
@@ -217,19 +217,28 @@ def get_green_times(caps, flows, network, type):
             #first store all the data in an array of arrays per link
             intersectionLinksFlows = []
             intersectionCaps = []
+            intersectionFf_tt = []
             intersectionLinkIDs = []
+            oldGreenTimes = []
             for j in range(i,len(caps)):
                 if network.links.to_node[j] == network.links.to_node[i]:
                     intersectionLinksFlows.append(flows[j])
                     intersectionCaps.append(caps[j])
                     intersectionLinkIDs.append(j)
+                    intersectionFf_tt.append(network.links.length[j] / network.links.free_speed[j])
+                    oldGreenTimes.append(oldGreenTimesDic[j])
             intersections.remove(network.links.to_node[i])
-            if type == 'webster':
-                greenTimes = websterGreenTimes(intersectionCaps, intersectionLinksFlows)
-            elif type == 'P0':
-                greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows)
+
+            #reply with the right method
+            if method == 'webster':
+                greenTimes = websterGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt)
+            elif method == 'P0':
+                greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt)
+
+
             for j in range(len(greenTimes)):
                 greenDic[intersectionLinkIDs[j]] = greenTimes[j]
+                
     return dict(sorted(greenDic.items()))
                 
     
