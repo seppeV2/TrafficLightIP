@@ -103,7 +103,7 @@ def makeOwnToyNetwork(form):
         ebunch_of_nodes = [
             (0, {"x_coord": 0, "y_coord": 30}),
             (1, {"x_coord": 30, "y_coord": 30}),
-            (2, {"x_coord": 20, "y_coord": 15}),
+            (2, {"x_coord": 15, "y_coord": 15}),
             (3, {"x_coord": 35, "y_coord": 30}),
             
         ]
@@ -186,10 +186,8 @@ def __bpr_green_cost(flows, capacities, ff_tts, g_times):
 
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
-    #enlarged the cost for green time to see significant difference 
-    #print('bpr normal cost :\t'+str(__bpr_cost_single(flow, capacity, ff_tt)))
-    cost = 1.0 * ff_tt + np.multiply(bpr_a, pow((flow / (capacity * g_time )), bpr_b)) * ff_tt
-    #print('bpr green time cost:\t'+str(cost)+'\n')
+
+    cost = 1.0 * ff_tt + np.multiply(10, pow((flow / (capacity )), bpr_b))*pow(1/g_time, bpr_b) * ff_tt
     return cost
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost

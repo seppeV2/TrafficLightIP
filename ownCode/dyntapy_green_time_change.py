@@ -107,11 +107,20 @@ def msa_green_flow_averaging(
             f2 = 1 / k * f2 + (k - 1) / k * f1
             current_gap = gap(f1, costs, demand.to_destinations.values, ssp_costs)
             converged = current_gap < msa_delta or k == msa_max_iterations
+
+            #to check in terminal if the msa converged or was ended by max iterations
+            """ if converged == True: 
+                if current_gap < msa_delta: 
+                    print('MSA step: really converged')
+                else: 
+                    print('MSA step: max iteration reached')"""
+
             gaps.append(current_gap)
             if current_gap < last_gap:
                 best_flow_vector = f1
                 best_costs = costs
-                last_gap = current_gap
+                last_gap = current_gap 
+
         f1 = f2.copy()
         if store_iterations:
             # lists cannot be passed to object mode
