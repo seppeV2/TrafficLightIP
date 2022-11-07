@@ -15,7 +15,7 @@ from dyntapy.demand import build_internal_static_demand, \
 from osmnx.distance import euclidean_dist_vec
 from dyntapy.sta.utilities import aon, __bpr_cost_single
 
-from greenTimes import websterGreenTimes
+from greenTimes import websterGreenTimes,P0policyGreenTimes
 #building our own two rout DiGraph route (using nodes)
 def makeOwnToyNetwork(form):
     if form == 'complex':
@@ -102,45 +102,41 @@ def makeOwnToyNetwork(form):
         g = nx.DiGraph()
         ebunch_of_nodes = [
             (0, {"x_coord": 0, "y_coord": 30}),
-            (1, {"x_coord": 5, "y_coord": 30}),
+            (1, {"x_coord": 30, "y_coord": 30}),
             (2, {"x_coord": 20, "y_coord": 15}),
             (3, {"x_coord": 35, "y_coord": 30}),
-            (4, {"x_coord": 50, "y_coord": 30}),
-            (5, {"x_coord": 20, "y_coord": 45}),
+            
         ]
         g.add_nodes_from(ebunch_of_nodes)
 
         ebunch_of_edges = [
             (0, 1),
-            (1, 5),
-            (5, 3),
-            (3, 4),
-            (1, 2),
-            (2, 3),
+            (0, 2),
+            (2, 1),
+            (1, 3),
+            
         ]
 
         bottle_neck_edges = [
             (0, 1),
-            (1, 5),
-            (5, 3),
-            (3, 4),
-            (1, 2),
-            (2, 3),
+            (0, 2),
+            (2, 1),
+            (1, 3),
+            
         ]
 
         bottle_neck_capacity_speed =   [
-            (600, 80),
+            (100, 80),
             (150, 80),
             (150, 80),
-            (600, 80),
-            (100, 80),
-            (100, 80),
+            (250, 80),
+            
         ]
 
         g.add_edges_from(ebunch_of_edges)
         set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
 
-        ODcentroids = np.array([np.array([0,5,20,35,50,20]), np.array([30,30,15,30,30,45])])
+        ODcentroids = np.array([np.array([0,30,20,35]), np.array([30,30,15,30])])
         g = relabel_graph(g)  # adding link and node ids, connectors and centroids
         odCsvFile = 'ODmatrixSimple.csv'
         return g, ODcentroids, odCsvFile
@@ -211,7 +207,7 @@ def getIntersections(network):
     return intersections
 
 
-def get_green_times(caps, flows, network):
+def get_green_times(caps, flows, network, type):
     #first use a dictionary so we can order the costs to the right links after 
     intersections = getIntersections(network)
     greenDic = {}
@@ -230,7 +226,10 @@ def get_green_times(caps, flows, network):
                     intersectionCaps.append(caps[j])
                     intersectionLinkIDs.append(j)
             intersections.remove(network.links.to_node[i])
-            greenTimes = websterGreenTimes(intersectionCaps, intersectionLinksFlows)
+            if type == 'webster':
+                greenTimes = websterGreenTimes(intersectionCaps, intersectionLinksFlows)
+            elif type == 'P0':
+                greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows)
             for j in range(len(greenTimes)):
                 greenDic[intersectionLinkIDs[j]] = greenTimes[j]
     return dict(sorted(greenDic.items()))
