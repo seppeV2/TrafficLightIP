@@ -2,6 +2,7 @@ import networkx as nx
 import numpy as np
 import pathlib
 import dyntapy
+import matplotlib.pyplot as plt
 
 from dyntapy import show_network, add_centroids, relabel_graph, show_demand, \
     add_connectors
@@ -66,20 +67,26 @@ def main():
     maxLoops = 1000
     safety = 0
     gap = 1
+    flows_gap = []
+    greens_gap = []
     while gap > delta and safety < maxLoops:
         safety += 1
         print('loop = '+str(safety))
         newResult = assignment.run_greens('msa', greens)
-        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network)
+        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, 'webster')
         print('flows: '+str(newResult.flows))
         print('greens: '+ str(newGreens))
         #calculating the gap 
-        gap = sum([abs(gi - gj) for gi, gj in zip(result.flows, newResult.flows)])
+        gap = sum([abs(xi - xj) for xi, xj in zip(result.flows, newResult.flows)])
+        flows_gap.append(gap)
         print('Gap = '+ str(gap))
+        gap_green = sum([abs(gi - gj) for gi, gj in zip(greens, newGreens)])
+        greens_gap.append(gap_green)
         result = newResult
         greens = newGreens
 
     show_network(g, flows = result.flows, euclidean=True)
+    plt.plot(flows_gap)
 
 
 
