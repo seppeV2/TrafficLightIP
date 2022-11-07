@@ -47,7 +47,7 @@ def websterGreenTimes(caps, flows):
 
 def P0policyGreenTimes(caps, flows):
     #solving a linear system of equations 
-            #for al links per intersection xi/(si*gi) needs to be equal to 
+            #for al links per intersection si*di needs to be equal to 
             #sum of g's needs to be 1
     left_side = []
     right_side = []
