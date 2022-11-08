@@ -31,19 +31,18 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
         green_time_aon[maxIndex] = 1-change
 
         #apply the msa step
-        newGreens = [1 / step * g_aon + (step - 1) / step * g for g_aon, g in zip(green_time_aon, greens)]
+        newGreens = [(1 / step * g_aon) + ((step - 1) / step * g) for g_aon, g in zip(green_time_aon, greens)]
         def check_for_equality(list):
             equal = True
             for i in range(len(list)-1):
-                if list[i] != list[i+1]:
+                if abs(list[i] - list[i+1]) > msa_delta:
                     equal = False
             return equal
 
-        converged = sum([abs(g_n - g_i) for g_n,g_i in zip(newGreens, greens)]) < msa_delta or (check_for_equality(equality)) 
-
+        converged = np.linalg.norm(np.subtract(newGreens,greens)) < msa_delta or (check_for_equality(equality)) 
         greens = newGreens
-
-    return greens
+    
+    return greens,equality
 
 
 
@@ -51,18 +50,17 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
 
 #in here we will calculate the green times according to different policies
 #These will be used in the cost function of the static assignment
-
-
 def websterGreenTimes(caps, flows, initial_greens, ff_tts):
-
-    #this is needed to compare the results
-    theoreticalGreenTime = theoreticalWebsterGreens(caps, flows)
-    print('Theoretical Webster Green Times = {}'.format(theoreticalGreenTime))
-
     #now calculate the green times iteratively 
-    greens = msa_green_times(caps, flows, initial_greens, ff_tts, 'webster')
-
+    greens,equality = msa_green_times(caps, flows, initial_greens, ff_tts, 'webster')
+    print('\ncheck if the policy constraint is satisfied: {}\n'.format(equality))
     print('MSA Webster Green Times = {}'.format(greens))
+    
+
+     #this is needed to compare the results
+    theoreticalGreenTime = theoreticalWebsterGreens(caps, flows)
+    print('Theoretical Webster Green Times = {}\n'.format(theoreticalGreenTime))
+
 
     return greens
 
@@ -104,14 +102,15 @@ def theoreticalWebsterGreens(caps, flows):
 
 def P0policyGreenTimes(caps, flows, initial_greens, ff_tts):
 
+    #now calculate the green times iteratively 
+    greens,equality = msa_green_times(caps, flows, initial_greens, ff_tts, 'P0')
+    print('\ncheck if the policy constraint is satisfied: {}\n'.format(equality))
+    print('MSA P0 Green Times = {}'.format(greens))
+    
+
     #this is needed to compare the results
     theoreticalGreenTime = theoreticalWebsterGreens(caps, flows)
-    print('Theoretical P0 Green Times = {}'.format(theoreticalGreenTime))
-
-    #now calculate the green times iteratively 
-    greens = msa_green_times(caps, flows, initial_greens, ff_tts, 'P0')
-    print('MSA P0 Green Times = {}'.format(greens))
-
+    print('Theoretical P0 Green Times = {}\n'.format(theoreticalGreenTime))
     return greens
 
 #finding the theoretical P0 green times

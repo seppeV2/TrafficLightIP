@@ -33,6 +33,10 @@ from dyntapy_green_time_change import GreenStaticAssignment
 
 #main function where we merge everything together
 def main():
+
+    method = 'webster'
+
+
     #setup
     print("STARTING SETUP")
     g, ODcentroids, odFile = makeOwnToyNetwork('simple')
@@ -54,14 +58,12 @@ def main():
     result = assignment.run_greens('msa', firstGreen)
     #calculate the first green times according the first static assignment
     print('flows: '+str(result.flows))
-    #greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'webster', firstGreen)
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'P0', firstGreen)
+    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, method, firstGreen)
     print('greens: '+ str(greens))
 
 
-    #print('greensP0: '+ str(greens2))
-    show_network(g, flows = result.flows, euclidean=True)
-            #show_network(g, flows = result2.flows, euclidean = True)
+    #show_network(g, flows = result.flows, euclidean=True)
+    
     #start the loop
     print('START THE LOOP')
         #initialise parameters and variables
@@ -76,24 +78,30 @@ def main():
     while gap > delta and safety < maxLoops:
         safety += 1
         print('loop = '+str(safety))
+
         newResult = assignment.run_greens('msa', greens)
+        print('flows: '+str(newResult.flows))
+
+
+        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, method, greens)
+        
+
+        #calculating the gap 
+        gap = np.linalg.norm(np.subtract(result.flows, newResult.flows))
+        print('Gap = {}\n'.format(str(gap)))
+
+
+        #add intermediate results to the list to plot
+        flows_gap.append(gap)
         cost_link_a.append(newResult.link_costs[0])
         cost_link_b.append(newResult.link_costs[3]+newResult.link_costs[1])
-        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, 'P0', greens)
-        print('flows: '+str(newResult.flows))
-        print('greens: '+ str(newGreens))
-        #calculating the gap 
-        gap = sum([abs(xi - xj) for xi, xj in zip(result.flows, newResult.flows)])
-        flows_gap.append(gap)
-        print('Gap = '+ str(gap))
-        gap_green = sum([abs(gi - gj) for gi, gj in zip(greens, newGreens)])
-        greens_gap.append(gap_green)
+
         result = newResult
         greens = newGreens
 
     show_network(g, flows = result.flows, euclidean=True)
 
-    ## graph plots 
+    """  ## graph plots 
     plt.figure()
     plt.plot(flows_gap)
     plt.title('Evolution of the gap during the iterations')
@@ -104,7 +112,7 @@ def main():
     plt.plot(cost_link_b)
     plt.title('Evolution of the link costs on the two intersection links')
     plt.legend(['link 0','link 3'])
-    plt.show()
+    plt.show() """
 
 
 
