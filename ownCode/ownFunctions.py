@@ -187,7 +187,7 @@ def __bpr_green_cost(flows, capacities, ff_tts, g_times):
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
 
-    cost = 1.0 * ff_tt + np.multiply(bpr_a, pow((flow / (capacity * g_time)), bpr_b)) * ff_tt
+    cost = 1.0 * ff_tt + np.multiply(np.multiply(bpr_a, pow((flow / (np.multiply(capacity ,g_time))), bpr_b)) * ff_tt)
     return cost
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost

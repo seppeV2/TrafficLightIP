@@ -151,4 +151,4 @@ def theoreticalP0Greens(caps, flows, ff_tts):
     return g_times
 
 def get_link_delay(flow, cap,  ff_tt, g_time):
-    return np.multiply(bpr_a, pow((flow / (cap * g_time)), bpr_b)) * ff_tt
+    return np.multiply(np.multiply(bpr_a, pow((flow / (cap * g_time)), bpr_b)) * ff_tt)
