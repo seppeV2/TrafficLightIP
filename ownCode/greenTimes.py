@@ -29,7 +29,8 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
                 green_time_aon[i] = 0.01
                 change += 0.01
         green_time_aon[maxIndex] = 1-change
-
+        print('equality = {}'.format(equality))
+        print('green time aon = {}'.format(green_time_aon))
         #apply the msa step
         newGreens = [(1 / step * g_aon) + ((step - 1) / step * g) for g_aon, g in zip(green_time_aon, greens)]
         def check_for_equality(list):
@@ -151,4 +152,4 @@ def theoreticalP0Greens(caps, flows, ff_tts):
     return g_times
 
 def get_link_delay(flow, cap,  ff_tt, g_time):
-    return np.multiply(np.multiply(bpr_a, pow((flow / (cap * g_time)), bpr_b)) * ff_tt)
+    return np.multiply(np.multiply(bpr_a, pow((flow / (cap * g_time)), bpr_b)) ,ff_tt)

@@ -34,7 +34,7 @@ from dyntapy_green_time_change import GreenStaticAssignment
 #main function where we merge everything together
 def main():
 
-    method = 'webster'
+    method = 'P0'
 
 
     #setup
