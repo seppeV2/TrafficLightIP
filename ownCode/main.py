@@ -1,32 +1,11 @@
 import networkx as nx
 import numpy as np
 import pathlib
-import dyntapy
 import matplotlib.pyplot as plt
 
-from dyntapy import show_network, add_centroids, relabel_graph, show_demand, \
-    add_connectors
-from pytest import mark
-from dyntapy.assignments import StaticAssignment
-from dyntapy.demand_data import od_graph_from_matrix
-from dyntapy.supply_data import _set_toy_network_attributes, build_network
-from dyntapy.settings import parameters
-from dyntapy.demand import build_internal_static_demand, \
-    build_internal_dynamic_demand, DynamicDemand, SimulationTime
-from osmnx.distance import euclidean_dist_vec
-from dyntapy.results import StaticResult, get_skim, DynamicResult
-from dyntapy.sta.msa import msa_flow_averaging
+from dyntapy import show_network
 
-from dyntapy.demand import (
-    InternalDynamicDemand,
-    build_internal_static_demand,
-    build_internal_dynamic_demand,
-)
-
-
-from ownFunctions import makeOwnToyNetwork, getODGraph, getIntersections, get_green_times
-from greenTimes import websterGreenTimes
-from aidFunctions import getNodeSummary
+from ownFunctions import makeOwnToyNetwork, getODGraph, get_green_times
 from dyntapy_green_time_change import GreenStaticAssignment
 
 
@@ -34,7 +13,15 @@ from dyntapy_green_time_change import GreenStaticAssignment
 #main function where we merge everything together
 def main():
 
-    method = 'P0'
+        #two cost functions at the moment
+        # 'bpr' to use the bpr cost function
+        # 'WebsterTwoTerm' to use the webster two term delay cost function
+    methodCost = 'WebsterTwoTerm'
+
+        #two green time policies
+        # 'equisaturation' 
+        # 'P0'
+    methodGreen = 'equisaturation'
 
 
     #setup
@@ -55,10 +42,10 @@ def main():
 
     #initial msa without traffic lights
             #result2 = assignment.run('msa')
-    result = assignment.run_greens('msa', firstGreen)
+    result = assignment.run_greens('msa', firstGreen,methodCost)
     #calculate the first green times according the first static assignment
     print('flows: '+str(result.flows))
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, method, firstGreen)
+    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, methodGreen, firstGreen)
     print('greens: '+ str(greens))
 
 
@@ -72,18 +59,17 @@ def main():
     safety = 0
     gap = 1
     flows_gap = []
-    greens_gap = []
     cost_link_a = [result.link_costs[0]]
     cost_link_b = [result.link_costs[3]]
     while gap > delta and safety < maxLoops:
         safety += 1
         print('loop = '+str(safety))
 
-        newResult = assignment.run_greens('msa', greens)
+        newResult = assignment.run_greens('msa', greens,methodCost)
         print('flows: '+str(newResult.flows))
 
 
-        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, method, greens)
+        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, methodGreen, greens)
         
 
         #calculating the gap 
