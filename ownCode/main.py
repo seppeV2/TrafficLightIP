@@ -55,17 +55,14 @@ def main():
     result = assignment.run_greens('msa', firstGreen)
     #calculate the first green times according the first static assignment
     print('flows: '+str(result.flows))
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network)
+    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network,'webster')
     print('greens: '+ str(greens))
-    culGreensPerIntersection = ()
-    #greens2 = {0:(greens[0]),1:(greens[1]),2:(greens[2])}
-    greens2 = {}
-    for i in greens.keys():
-        greens2[i] = (greens[i],)
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'webster')
+    greensPlot = {}
     print('greensWebster: '+ str(greens))
+    for i in greens.keys():
+        greensPlot[i] = (greens[i],)
     greens2 = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'P0')
-    print('greensP0: '+ str(greens))
+    print('greensP0: '+ str(greens2))
     #show_network(g, flows = result.flows, euclidean=True)
             #show_network(g, flows = result2.flows, euclidean = True)
     #start the loop
@@ -96,15 +93,13 @@ def main():
         greens_gap.append(gap_green)
         result = newResult
         for i in greens.keys():
-            greens2[i] += (newGreens[i],)
+            greensPlot[i] += (newGreens[i],)
         greens = newGreens
-        if safety ==70:
-            show_network(g, flows=result.flows, euclidean=True)
-
+    print(greensPlot)
     #to visualize the green times over the links automatically
-    for i in greens2.keys():
-        x = np.linspace(1,len(greens2[i]),len(greens2[i]))
-        y = list(greens2[i])
+    for i in greensPlot.keys():
+        x = np.linspace(1,len(greensPlot[i]),len(greensPlot[i]))
+        y = list(greensPlot[i])
         plt.plot(x,y,label=str(i))
     plt.title("Green times of different links over the iterations")
     plt.legend()
@@ -112,9 +107,9 @@ def main():
 
     #to plot the green times of the two routes of a simple network
     #don't know if it's correct to sum the green times cuz they are fractions actually
-    x = np.linspace(1,len(greens2[0]), len(greens2[0]))
-    y1 = tuple(map(sum,zip(greens2[0],greens2[1],greens2[5]),greens2[4]))
-    y2 = tuple(map(sum,zip(greens2[0],greens2[2],greens2[3],greens2[5])))
+    x = np.linspace(1,len(greensPlot[0]), len(greensPlot[0]))
+    y1 = tuple(map(sum,zip(greensPlot[0],greensPlot[2])))
+    y2 = tuple(map(sum,zip(greensPlot[1],greensPlot[2],greensPlot[3])))
     plt.plot(x,y1,label = "Route 1")
     plt.plot(x,y2, label = "Route 2")
     plt.legend()
