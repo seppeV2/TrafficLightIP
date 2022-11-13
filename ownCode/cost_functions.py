@@ -22,7 +22,9 @@ def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
 def __webster_two_term_green(flows, capacities, ff_tts, g_times):
     number_of_links = len(flows)
     costs = np.empty(number_of_links, dtype=np.float64)
+    print('flows inside two term before adjusment = {}'.format(flows))
     flows = flow_corrector(flows,capacities, g_times,[])
+    print('flows inside two term = {}'.format(flows))
     for it, (f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
         costs[it] = __webster_two_term_green_single(f, c, ff_tt,g_time)

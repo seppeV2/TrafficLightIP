@@ -10,7 +10,7 @@ from dyntapy.results import StaticResult, get_skim
 from dyntapy._context import iteration_states
 from dyntapy.assignments import StaticAssignment
 
-from cost_functions import __bpr_green_cost, __webster_two_term_green
+from cost_functions import __bpr_green_cost, __webster_two_term_green, flow_corrector
 
 import numpy as np
 import dyntapy._context
@@ -96,6 +96,9 @@ def msa_green_flow_averaging(
                     g_times = greenTimes
                 )
         ssp_costs, f2 = aon(demand, costs, network)
+        if method == 'WebsterTwoTerm':
+            f2 = np.round(flow_corrector(f2, network.links.capacity, greenTimes, []))
+        print('flows inside two msa = {}'.format(f2))
         # print("done")
         if k == 1:
             converged = False
@@ -108,11 +111,11 @@ def msa_green_flow_averaging(
             converged = current_gap < msa_delta or k == msa_max_iterations
 
             #to check in terminal if the msa converged or was ended by max iterations
-            """ if converged == True: 
+            if converged == True: 
                 if current_gap < msa_delta: 
                     print('MSA step: really converged')
                 else: 
-                    print('MSA step: max iteration reached')"""
+                    print('MSA step: max iteration reached')
 
             gaps.append(current_gap)
             print(costs)
