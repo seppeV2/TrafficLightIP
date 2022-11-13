@@ -1,21 +1,12 @@
 import networkx as nx
 import numpy as np
-import pathlib
-import dyntapy
 
-from dyntapy import show_network, add_centroids, relabel_graph, show_demand, \
-    add_connectors
-from pytest import mark
-from dyntapy.assignments import StaticAssignment
+from dyntapy import relabel_graph
 from dyntapy.demand_data import od_graph_from_matrix
-from dyntapy.supply_data import _set_toy_network_attributes, build_network
-from dyntapy.settings import parameters
-from dyntapy.demand import build_internal_static_demand, \
-    build_internal_dynamic_demand, DynamicDemand, SimulationTime
 from osmnx.distance import euclidean_dist_vec
-from dyntapy.sta.utilities import aon, __bpr_cost_single
 
-from greenTimes import websterGreenTimes,P0policyGreenTimes
+from greenTimes import equisaturationGreenTimes,P0policyGreenTimes
+
 #building our own two rout DiGraph route (using nodes)
 def makeOwnToyNetwork(form):
     if form == 'complex':
@@ -173,22 +164,9 @@ def getODGraph(ODMatrix, ODcentroids):
     matrix = np.genfromtxt(ODMatrix, delimiter=',')
     return od_graph_from_matrix(matrix, X=xOD, Y=yOD)
 
-bpr_b = parameters.static_assignment.bpr_beta
-bpr_a = parameters.static_assignment.bpr_alpha
 
-def __bpr_green_cost(flows, capacities, ff_tts, g_times):
-    number_of_links = len(flows)
-    costs = np.empty(number_of_links, dtype=np.float64)
-    for it, (f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
-        assert c != 0
-        costs[it] = __bpr_green_cost_single(f, c, ff_tt,g_time)
-    return costs
 
-#building our own bpr funtion 
-def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
 
-    cost = 1.0 * ff_tt + np.multiply(10, pow((flow / (capacity )), bpr_b))*pow(1/g_time, bpr_b) * ff_tt
-    return cost
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost
 #function (including the green times)
@@ -205,7 +183,7 @@ def getIntersections(network):
     return intersections
 
 
-def get_green_times(caps, flows, network, type):
+def get_green_times(caps, flows, network, method, oldGreenTimesDic):
     #first use a dictionary so we can order the costs to the right links after 
     intersections = getIntersections(network)
     greenDic = {}
@@ -217,19 +195,29 @@ def get_green_times(caps, flows, network, type):
             #first store all the data in an array of arrays per link
             intersectionLinksFlows = []
             intersectionCaps = []
+            intersectionFf_tt = []
             intersectionLinkIDs = []
+            oldGreenTimes = []
             for j in range(i,len(caps)):
                 if network.links.to_node[j] == network.links.to_node[i]:
+                    
                     intersectionLinksFlows.append(flows[j])
                     intersectionCaps.append(caps[j])
                     intersectionLinkIDs.append(j)
+                    intersectionFf_tt.append(network.links.length[j] / network.links.free_speed[j])
+                    oldGreenTimes.append(oldGreenTimesDic[j])
             intersections.remove(network.links.to_node[i])
-            if type == 'webster':
-                greenTimes = websterGreenTimes(intersectionCaps, intersectionLinksFlows)
-            elif type == 'P0':
-                greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows)
+
+            #reply with the right method
+            if method == 'equisaturation':
+                greenTimes = equisaturationGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
+            elif method == 'P0':
+                greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
+
+
             for j in range(len(greenTimes)):
                 greenDic[intersectionLinkIDs[j]] = greenTimes[j]
+
     return dict(sorted(greenDic.items()))
                 
     
