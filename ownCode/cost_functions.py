@@ -16,7 +16,7 @@ def __bpr_green_cost(flows, capacities, ff_tts, g_times):
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
 
-    cost = 1.0 * ff_tt + np.multiply(np.multiply(bpr_a, pow((flow / (np.multiply(capacity ,g_time))), bpr_b)), ff_tt)
+    cost = ff_tt * (1.0 + np.multiply(bpr_a, pow((flow / (np.multiply(capacity ,g_time))), bpr_b)))
     return cost
 
 def __webster_two_term_green(flows, capacities, ff_tts, g_times):

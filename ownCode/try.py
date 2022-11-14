@@ -1,5 +1,3 @@
 from ownFunctions import makeOwnToyNetwork
 
-g, odC = makeOwnToyNetwork()
-
-print(g._node)
+print(5*(1+1))

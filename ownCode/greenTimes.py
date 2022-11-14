@@ -11,6 +11,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
     converged = False
     greens = initial_greens
     step = 1
+    previous_greens = np.multiply(initial_greens,2)
     while not converged:
         step+=1
         if method =='equisaturation':
@@ -29,8 +30,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
                 green_time_aon[i] = 0.01
                 change += 0.01
         green_time_aon[maxIndex] = 1-change
-        #print('equality = {}'.format(equality))
-        #print('green time aon = {}'.format(green_time_aon))
+
         #apply the msa step
         newGreens = [(1 / step * g_aon) + ((step - 1) / step * g) for g_aon, g in zip(green_time_aon, greens)]
         def check_for_equality(list):
@@ -40,9 +40,16 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
                     equal = False
             return equal
 
-        converged = np.linalg.norm(np.subtract(newGreens,greens)) < msa_delta or (check_for_equality(equality)) 
+        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < msa_delta) or (check_for_equality(equality))
+        previous_greens = greens
         greens = newGreens
-    
+
+        if check_for_equality(equality):
+            converged_reason = 'equality'
+        else:
+            converged_reason = 'no change in greens' 
+        
+    print('\nThe reason of green time msa convergence: {}'.format(converged_reason))
     return greens,equality
 
 #in here we will calculate the green times according to different policies
@@ -50,7 +57,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
 def equisaturationGreenTimes(caps, flows, initial_greens, ff_tts, method):
     #now calculate the green times iteratively 
     greens,equality = msa_green_times(caps, flows, initial_greens, ff_tts, method)
-    print('\ncheck if the policy constraint is satisfied: {}\n'.format(equality))
+    print('check if the policy constraint is satisfied: {}\n'.format(equality))
     print('MSA Equisaturation Green Times = {}'.format(greens))
     
 
@@ -100,12 +107,12 @@ def P0policyGreenTimes(caps, flows, initial_greens, ff_tts, method):
 
     #now calculate the green times iteratively 
     greens,equality = msa_green_times(caps, flows, initial_greens, ff_tts, method)
-    print('\ncheck if the policy constraint is satisfied: {}\n'.format(equality))
+    print('check if the policy constraint is satisfied: {}\n'.format(equality))
     print('MSA P0 Green Times = {}'.format(greens))
     
 
     #this is needed to compare the results
-    theoreticalGreenTime = theoreticalP0Greens(caps, flows)
+    theoreticalGreenTime = theoreticalP0Greens(caps, flows, ff_tts)
     print('Theoretical P0 Green Times = {}\n'.format(theoreticalGreenTime))
     return greens
 
@@ -134,7 +141,7 @@ def theoreticalP0Greens(caps, flows, ff_tts):
         right_side = []
         last_term = [1]
         for i in range(len(caps)-1):
-            left_side.append([pow(ff_tts[i]*caps[i],bpr_b)*(caps[i]/flows[i]), - pow(ff_tts[i]*caps[i+1],bpr_b)*(caps[i+1]/flows[i+1])])
+            left_side.append([pow(ff_tts[i]*caps[i],bpr_b)*(caps[i]/flows[i]), - pow(ff_tts[i+1]*caps[i+1],bpr_b)*(caps[i+1]/flows[i+1])])
             right_side.append(0)
             last_term.append(1)
         left_side.append(last_term)
@@ -147,4 +154,4 @@ def theoreticalP0Greens(caps, flows, ff_tts):
     return g_times
 
 def get_link_delay(flow, cap,  ff_tt, g_time):
-    return np.multiply(np.multiply(bpr_a, pow((flow / (cap * g_time)), bpr_b)) ,ff_tt)
+    return ff_tt * bpr_a * (flow/(cap*g_time))**bpr_b

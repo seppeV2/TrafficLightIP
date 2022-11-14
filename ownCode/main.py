@@ -21,7 +21,7 @@ def main():
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'equisaturation'
+    methodGreen = 'P0'
 
 
     #setup
@@ -63,7 +63,7 @@ def main():
     cost_link_b = [result.link_costs[3]]
     while gap > delta and safety < maxLoops:
         safety += 1
-        print('loop = '+str(safety))
+        print('####\tLOOP = '+str(safety))
 
         newResult = assignment.run_greens('msa', greens,methodCost)
         print('flows: '+str(newResult.flows))
