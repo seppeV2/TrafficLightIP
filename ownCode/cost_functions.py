@@ -1,3 +1,4 @@
+from math import inf
 import numpy as np
 from dyntapy.settings import parameters
 
@@ -22,24 +23,28 @@ def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
 def __webster_two_term_green(flows, capacities, ff_tts, g_times):
     number_of_links = len(flows)
     costs = np.empty(number_of_links, dtype=np.float64)
+    dos = np.empty(number_of_links, dtype=np.float64)
     print('flows inside two term before adjusment = {}'.format(flows))
-    flows = flow_corrector(flows,capacities, g_times,[])
+    #flows = flow_corrector(flows,capacities, g_times,[])
     print('flows inside two term = {}'.format(flows))
     for it, (f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
-        costs[it] = __webster_two_term_green_single(f, c, ff_tt,g_time)
+        costs[it] = __webster_two_term_green_single(f, c, ff_tt,g_time)[0]
+        dos[it] = __webster_two_term_green_single(f, c, ff_tt,g_time)[1]
+    print('dos = {}'.format(dos))
     return costs
 
 def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):
     dos = flow/(capacity*g_time)
-    if dos == 1:
-        dos = 0.99
-    elif dos == 0:
-        dos = 0.01
-    term1 = (capacity*(1-g_time)**2)/(1-g_time*dos)
-    term2 = (dos**2)/(capacity*g_time*dos*(1-dos))
-    cost = ff_tt + (9/20)*(term1+term2)
-    return cost
+    if dos >= 1:
+        cost = 50
+    elif dos <= 0:
+        cost =0
+    else:
+        term1 = (capacity*(1-g_time)**2)/(1-g_time*dos)
+        term2 = (dos**2)/(capacity*g_time*dos*(1-dos))
+        cost = ff_tt + (9/20)*(term1+term2)
+    return cost, dos
 
 
 #the safety mech to make sure DOS is never 1

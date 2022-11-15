@@ -21,7 +21,7 @@ def main():
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'P0'
+    methodGreen = 'equisaturation'
 
 
     #setup
@@ -36,6 +36,7 @@ def main():
     #starting with 0.5 at every two link node
         #hardCoded for simple
     firstGreen = {0: 0.5, 1: 1, 2: 1, 3: 0.5}
+
         #hardCoded for complex 
     #firstGreen = {0: 1, 1: 1, 2: 0.5, 3: 1, 4: 1, 5: 1, 6: 1, 7: 0.5, 8: 0.5, 9: 1, 10: 1, 11: 1, 12: 0.5, 13: 0.5, 14: 1, 15: 0.5}
 
@@ -55,7 +56,7 @@ def main():
     print('START THE LOOP')
         #initialise parameters and variables
     delta = 0.001
-    maxLoops = 25
+    maxLoops = 50
     safety = 0
     gap = 1
     flows_gap = []

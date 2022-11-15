@@ -103,13 +103,13 @@ def msa_green_flow_averaging(
                     flows=f2,
                     g_times = greenTimes
                 )
-        ssp_costs, f2 = aon(demand, costs, network)
-        """ if method == 'WebsterTwoTerm':
+        #ssp_costs, f2 = aon(demand, costs, network)
+        if method == 'WebsterTwoTerm':
             ssp_costs, f2 = aon_websterTwoTerm(demand, costs, network)
             #f2 = np.round(flow_corrector(f2, network.links.capacity, greenTimes, []))
         else: 
             ssp_costs, f2 = aon(demand, costs, network)
-         """
+        
         # print("done")
         if k == 1:
             converged = False
