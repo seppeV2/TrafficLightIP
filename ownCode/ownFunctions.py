@@ -98,6 +98,13 @@ def makeOwnToyNetwork(form):
             (3, {"x_coord": 35, "y_coord": 30}),
             
         ]
+
+        nodes_signalized = [
+            0,
+            1,
+            0,
+            0,
+        ]
         g.add_nodes_from(ebunch_of_nodes)
 
         ebunch_of_edges = [
@@ -124,8 +131,15 @@ def makeOwnToyNetwork(form):
             
         ]
 
+        is_signalized = [
+            1,
+            0,
+            1,
+            0,
+        ]
+
         g.add_edges_from(ebunch_of_edges)
-        set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
+        set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed, is_signalized, nodes_signalized)
 
         ODcentroids = np.array([np.array([0,30,20,35]), np.array([30,30,15,30])])
         g = relabel_graph(g)  # adding link and node ids, connectors and centroids
@@ -135,14 +149,26 @@ def makeOwnToyNetwork(form):
 
 
 #modified dyntapy function to change the capacity and the speed of each link
-def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed):
+def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_signalized = [], nodes_signalized=[]):
+    #check links singalized or not
+    if is_signalized == []:
+        is_signalized = np.zeros(len(bottleneck_edges))
+
+    #check nodes singalized or not
+    if nodes_signalized == []:
+        nodes_signalized = np.zeros(len(g.nodes))
+        
     #default like this
     capacity = 2000
     free_speed = 80
     lanes = 1
     node_ctrl_type = "none"
+    count = 0
     for v in g.nodes:
         g.nodes[v]["ctrl_type"] = node_ctrl_type
+        g.nodes[v]["signalized_node"] = nodes_signalized[count]
+        count += 1 
+    count2 = 0
     for u, v, data in g.edges.data():
         y1 = g.nodes[v]["y_coord"]
         x1 = g.nodes[v]["x_coord"]
@@ -156,6 +182,9 @@ def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed):
             index = bottleneck_edges.index((u,v))
             data["capacity"] = bottle_neck_capacity_speed[index][0]
             data["free_speed"] = bottle_neck_capacity_speed[index][1]
+        
+        data["signalized"] = is_signalized[count2]
+        count2 += 1
 
 #function to load the OD matrix in from .cvs file to numpy array 
 def getODGraph(ODMatrix, ODcentroids):
@@ -170,22 +199,26 @@ def getODGraph(ODMatrix, ODcentroids):
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost
 #function (including the green times)
-def getIntersections(network):
-    arrivingLinks = {}
+def getIntersections(g):
+    intersecting_links = []
     intersections = []
-    for i in range(len(network.links.length)):
-        if str(network.links.to_node[i]) not in arrivingLinks.keys():
-            arrivingLinks[str(network.links.to_node[i])] = 1
-        else:
-            arrivingLinks[str(network.links.to_node[i])] +=1
-            if network.links.to_node[i] not in intersections:
-                intersections.append(network.links.to_node[i])
-    return intersections
+    links = {}
+    
+    for n in g.nodes:
+        if g.nodes[n]["signalized_node"] == 1:
+            intersections.append(g.nodes[n]["node_id"])
+
+    for u,v,data in g.edges.data():
+        if data["signalized"] == 1:
+            intersecting_links.append(data["link_id"])
+        links[data["link_id"]] = data["signalized"]
+    return intersections, intersecting_links, links
 
 
-def get_green_times(caps, flows, network, method, oldGreenTimesDic):
+def get_green_times(caps, flows, network, method, oldGreenTimesDic,g):
     #first use a dictionary so we can order the costs to the right links after 
-    intersections = getIntersections(network)
+    intersections = getIntersections(g)[0]
+    #intersectinglinks = getIntersections(g)[1]
     greenDic = {}
     for i in range(len(caps)):
         if network.links.to_node[i] not in intersections:

@@ -3,6 +3,7 @@ import numpy as np
 import pathlib
 import matplotlib.pyplot as plt
 
+
 from dyntapy import show_network
 
 from ownFunctions import makeOwnToyNetwork, getODGraph, get_green_times
@@ -12,7 +13,6 @@ from dyntapy_green_time_change import GreenStaticAssignment
 
 #main function where we merge everything together
 def main():
-
         #two cost functions at the moment
         # 'bpr' to use the bpr cost function
         # 'WebsterTwoTerm' to use the webster two term delay cost function
@@ -31,6 +31,8 @@ def main():
     odGraph = getODGraph(ODMatrix, ODcentroids)
     assignment = GreenStaticAssignment(g, odGraph)
 
+   
+
     print("RUNNING FIRST STATIC ASSIGNMENT WITH TRAFFIC LIGHTS (equal distributed)")
 
     #starting with 0.5 at every two link node
@@ -43,15 +45,14 @@ def main():
 
     #initial msa without traffic lights
             #result2 = assignment.run('msa')
-    result = assignment.run_greens('msa', firstGreen,methodCost)
+    result = assignment.run_greens('msa', firstGreen,methodCost,g)
     #calculate the first green times according the first static assignment
     print('flows: '+str(result.flows))
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, methodGreen, firstGreen)
+    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, methodGreen, firstGreen, g)
     print('greens: '+ str(greens))
 
 
     #show_network(g, flows = result.flows, euclidean=True)
-    
     #start the loop
     print('START THE LOOP')
         #initialise parameters and variables
@@ -66,11 +67,12 @@ def main():
         safety += 1
         print('####\tLOOP = '+str(safety))
 
-        newResult = assignment.run_greens('msa', greens,methodCost)
+        newResult = assignment.run_greens('msa', greens,methodCost,g)
         print('flows: '+str(newResult.flows))
+        print('link costs: '+str(newResult.link_costs))
 
 
-        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, methodGreen, greens)
+        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, methodGreen, greens, g)
         
 
         #calculating the gap 
