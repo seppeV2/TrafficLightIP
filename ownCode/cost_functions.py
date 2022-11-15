@@ -26,7 +26,6 @@ def __webster_two_term_green(flows, capacities, ff_tts, g_times,g):
     costs = np.empty(number_of_links, dtype=np.float64)
     dos = np.empty(number_of_links, dtype=np.float64)
     signal_links = getIntersections(g)[2]
-    print(signal_links)
     for it, (f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
         if signal_links[it] == 1:
@@ -34,13 +33,10 @@ def __webster_two_term_green(flows, capacities, ff_tts, g_times,g):
         else:
             costs[it] = ff_tts[it]
         dos[it] = f/(c*g_time)
-    print("DOS: {}".format(dos))
-    print("costs: {}".format(costs))
     return costs
 
 def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):
     dos = flow/(capacity*g_time)
-    print(dos)
     if dos >= 1:
         cost = 100
     elif dos <= 0:

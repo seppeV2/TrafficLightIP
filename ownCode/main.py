@@ -21,7 +21,7 @@ def main():
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'equisaturation'
+    methodGreen = 'P0'
 
 
     #setup
@@ -47,7 +47,7 @@ def main():
             #result2 = assignment.run('msa')
     result = assignment.run_greens('msa', firstGreen,methodCost,g)
     #calculate the first green times according the first static assignment
-    print('flows: '+str(result.flows))
+    print('\nflows: '+str(result.flows))
     greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, methodGreen, firstGreen, g)
     print('greens: '+ str(greens))
 
