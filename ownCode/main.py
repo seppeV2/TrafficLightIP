@@ -38,7 +38,7 @@ def main():
 
     #starting with 0.5 at every two link node
         #hardCoded for simple
-    firstGreen = {0: 0.5, 1: 1, 2: 1, 3: 0.5}
+    firstGreen = {0: 0.6, 1: 1, 2: 1, 3: 0.4}
 
         #hardCoded for complex 
     #firstGreen = {0: 1, 1: 1, 2: 0.5, 3: 1, 4: 1, 5: 1, 6: 1, 7: 0.5, 8: 0.5, 9: 1, 10: 1, 11: 1, 12: 0.5, 13: 0.5, 14: 1, 15: 0.5}
@@ -49,7 +49,7 @@ def main():
     result = assignment.run_greens('msa', firstGreen,methodCost,g)
     #calculate the first green times according the first static assignment
     print('\nflows: '+str(result.flows))
-    
+
     greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment, methodGreen, firstGreen, g)
     print('greens: '+ str(greens))
 
@@ -74,7 +74,7 @@ def main():
         print('link costs: '+str(newResult.link_costs))
 
 
-        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, methodGreen, greens, g)
+        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment, methodGreen, greens, g)
         
 
         #calculating the gap 
