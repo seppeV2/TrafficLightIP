@@ -5,8 +5,6 @@ from dyntapy import relabel_graph
 from dyntapy.demand_data import od_graph_from_matrix
 from osmnx.distance import euclidean_dist_vec
 
-from greenTimes import equisaturationGreenTimes,P0policyGreenTimes
-
 #building our own two rout DiGraph route (using nodes)
 def makeOwnToyNetwork(form):
     if form == 'complex':
@@ -105,6 +103,13 @@ def makeOwnToyNetwork(form):
             0,
             0,
         ]
+
+        is_origin  = [
+            1,
+            0,
+            0,
+            0,
+        ]
         g.add_nodes_from(ebunch_of_nodes)
 
         ebunch_of_edges = [
@@ -139,7 +144,7 @@ def makeOwnToyNetwork(form):
         ]
 
         g.add_edges_from(ebunch_of_edges)
-        set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed, is_signalized, nodes_signalized)
+        set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed, is_signalized, nodes_signalized, is_origin)
 
         ODcentroids = np.array([np.array([0,30,20,35]), np.array([30,30,15,30])])
         g = relabel_graph(g)  # adding link and node ids, connectors and centroids
@@ -149,7 +154,7 @@ def makeOwnToyNetwork(form):
 
 
 #modified dyntapy function to change the capacity and the speed of each link
-def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_signalized = [], nodes_signalized=[]):
+def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_signalized = [], nodes_signalized=[], is_origin = []):
     #check links singalized or not
     if is_signalized == []:
         is_signalized = np.zeros(len(bottleneck_edges))
@@ -158,6 +163,9 @@ def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_s
     if nodes_signalized == []:
         nodes_signalized = np.zeros(len(g.nodes))
         
+    if is_origin == []:
+        is_origin = np.zeros(len(g.nodes))
+
     #default like this
     capacity = 2000
     free_speed = 80
@@ -167,6 +175,7 @@ def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_s
     for v in g.nodes:
         g.nodes[v]["ctrl_type"] = node_ctrl_type
         g.nodes[v]["signalized_node"] = nodes_signalized[count]
+        g.nodes[v]["is_origin"] = is_origin[count]
         count += 1 
     count2 = 0
     for u, v, data in g.edges.data():
@@ -193,10 +202,6 @@ def getODGraph(ODMatrix, ODcentroids):
     matrix = np.genfromtxt(ODMatrix, delimiter=',')
     return od_graph_from_matrix(matrix, X=xOD, Y=yOD)
 
-
-
-
-
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost
 #function (including the green times)
 def getIntersections(g):
@@ -215,42 +220,6 @@ def getIntersections(g):
     return intersections, intersecting_links, links
 
 
-def get_green_times(caps, flows, network, method, oldGreenTimesDic,g):
-    #first use a dictionary so we can order the costs to the right links after 
-    intersections = getIntersections(g)[0]
-    #intersectinglinks = getIntersections(g)[1]
-    greenDic = {}
-    for i in range(len(caps)):
-        if network.links.to_node[i] not in intersections:
-            if i not in greenDic.keys():
-                greenDic[i]= 1
-        else:
-            #first store all the data in an array of arrays per link
-            intersectionLinksFlows = []
-            intersectionCaps = []
-            intersectionFf_tt = []
-            intersectionLinkIDs = []
-            oldGreenTimes = []
-            for j in range(i,len(caps)):
-                if network.links.to_node[j] == network.links.to_node[i]:
-                    
-                    intersectionLinksFlows.append(flows[j])
-                    intersectionCaps.append(caps[j])
-                    intersectionLinkIDs.append(j)
-                    intersectionFf_tt.append(network.links.length[j] / network.links.free_speed[j])
-                    oldGreenTimes.append(oldGreenTimesDic[j])
-            intersections.remove(network.links.to_node[i])
 
-            #reply with the right method
-            if method == 'equisaturation':
-                greenTimes = equisaturationGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
-            elif method == 'P0':
-                greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
-
-
-            for j in range(len(greenTimes)):
-                greenDic[intersectionLinkIDs[j]] = greenTimes[j]
-
-    return dict(sorted(greenDic.items()))
                 
     

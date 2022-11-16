@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 
 from dyntapy import show_network
 
-from ownFunctions import makeOwnToyNetwork, getODGraph, get_green_times
+from ownFunctions import makeOwnToyNetwork, getODGraph
 from dyntapy_green_time_change import GreenStaticAssignment
+from greenTimes import get_green_times, find_paths_origin_to_signalized_link
 
 
 
@@ -48,7 +49,8 @@ def main():
     result = assignment.run_greens('msa', firstGreen,methodCost,g)
     #calculate the first green times according the first static assignment
     print('\nflows: '+str(result.flows))
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, methodGreen, firstGreen, g)
+    
+    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment, methodGreen, firstGreen, g)
     print('greens: '+ str(greens))
 
 
