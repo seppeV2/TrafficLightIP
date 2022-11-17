@@ -12,6 +12,13 @@ from dyntapy.assignments import StaticAssignment
 
 from cost_functions import __bpr_green_cost, __webster_two_term_green
 
+from dyntapy.graph_utils import (
+    dijkstra_all,
+    pred_to_paths,
+    _make_out_links,
+    _make_in_links,
+)
+
 import numpy as np
 import dyntapy._context
 from dyntapy.results import StaticResult, get_skim, DynamicResult
@@ -23,7 +30,7 @@ msa_delta = parameters.static_assignment.msa_delta
 
 class GreenStaticAssignment(StaticAssignment):
 
-    def run_greens(self, methodAl, greenTimes , method, store_iterations=False, previous_flow=False, **kwargs):
+    def run_greens(self, methodAl, greenTimes , method, g, store_iterations=False, previous_flow=False, **kwargs):
        
         dyntapy._context.running_assignment = (
             self  # making the current assignment available as global var
@@ -33,7 +40,7 @@ class GreenStaticAssignment(StaticAssignment):
 
         if methodAl == "msa":
             costs, flows, gap_definition, gap = msa_green_flow_averaging(
-                self.internal_network, self.internal_demand, greenTimes ,method, store_iterations
+                self.internal_network, self.internal_demand, greenTimes ,method, g ,store_iterations
             )
             result = StaticResult(
                 costs,
@@ -54,7 +61,7 @@ class GreenStaticAssignment(StaticAssignment):
 
 
 def msa_green_flow_averaging(
-    network: Network, demand: InternalStaticDemand, greenTimesDic: dict , method: str, store_iterations=False
+    network: Network, demand: InternalStaticDemand, greenTimesDic: dict , method: str, g: any,  store_iterations=False, 
 ):
     gaps = []
     converged = False
@@ -78,7 +85,8 @@ def msa_green_flow_averaging(
                     capacities=network.links.capacity,
                     ff_tts=ff_tt,
                     flows=f2,
-                    g_times = greenTimes
+                    g_times = greenTimes,
+                    g = g,
                 )
         else:
             if method == 'bpr':
@@ -86,16 +94,18 @@ def msa_green_flow_averaging(
                     capacities=network.links.capacity,
                     ff_tts=ff_tt,
                     flows=f2,
-                    g_times = greenTimes
+                    g_times = greenTimes,
                 )
             elif method == 'WebsterTwoTerm':
                 costs = __webster_two_term_green(
                     capacities=network.links.capacity,
                     ff_tts=ff_tt,
                     flows=f2,
-                    g_times = greenTimes
+                    g_times = greenTimes,
+                    g = g,
                 )
         ssp_costs, f2 = aon(demand, costs, network)
+        
         # print("done")
         if k == 1:
             converged = False
@@ -108,14 +118,13 @@ def msa_green_flow_averaging(
             converged = current_gap < msa_delta or k == msa_max_iterations
 
             #to check in terminal if the msa converged or was ended by max iterations
-            """ if converged == True: 
+            if converged == True: 
                 if current_gap < msa_delta: 
                     print('MSA step: really converged')
                 else: 
-                    print('MSA step: max iteration reached')"""
+                    print('MSA step: max iteration reached')
 
             gaps.append(current_gap)
-            print(costs)
             if current_gap < last_gap:
                 best_flow_vector = f1
                 best_costs = costs
@@ -139,3 +148,31 @@ def msa_green_flow_averaging(
                 )
                 iteration_states.append(result)
     return best_costs, best_flow_vector, gap_definition, gaps
+
+def aon_websterTwoTerm(demand: InternalStaticDemand, costs, network: Network):
+    out_links = network.nodes.out_links
+    flows = np.zeros(len(costs))
+    number_of_od_pairs = 0
+    for i in demand.to_destinations.get_nnz_rows():
+        number_of_od_pairs += demand.to_destinations.get_nnz(i).size
+    ssp_costs = np.zeros(number_of_od_pairs)
+    counter = 0
+    for i in demand.to_destinations.get_nnz_rows():
+        destinations = demand.to_destinations.get_nnz(i)
+        demands = demand.to_destinations.get_row(i)
+        distances, pred = dijkstra_all(
+            costs, out_links, source=i, is_centroid=network.nodes.is_centroid
+        )
+        path_costs = np.empty(destinations.size, dtype=np.float32)
+        for idx, dest in enumerate(destinations):
+            path_costs[idx] = distances[dest]
+            # TODO: Check for correctness
+        paths = pred_to_paths(pred, i, destinations, out_links)
+        for path, path_flow, path_cost in zip(paths, demands, path_costs):
+            print('path = {}'.format(path))
+            ssp_costs[counter] = path_cost
+            counter += 1
+            for link_id in path:
+                flows[link_id] += path_flow
+    print('ssp_costs = {}'.format(ssp_costs))
+    return ssp_costs, flows

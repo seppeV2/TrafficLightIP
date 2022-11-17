@@ -5,16 +5,17 @@ import operator
 import dyntapy
 import matplotlib.pyplot as plt
 
+
 from dyntapy import show_network
 
-from ownFunctions import makeOwnToyNetwork, getODGraph, get_green_times
+from ownFunctions import makeOwnToyNetwork, getODGraph
 from dyntapy_green_time_change import GreenStaticAssignment
+from greenTimes import get_green_times, find_paths_origin_to_signalized_link
 
 
 
 #main function where we merge everything together
 def main():
-
         #two cost functions at the moment
         # 'bpr' to use the bpr cost function
         # 'WebsterTwoTerm' to use the webster two term delay cost function
@@ -23,7 +24,7 @@ def main():
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'equisaturation'
+    methodGreen = 'P0'
 
 
     #setup
@@ -33,10 +34,13 @@ def main():
     odGraph = getODGraph(ODMatrix, ODcentroids)
     assignment = GreenStaticAssignment(g, odGraph)
 
+   
+
     print("RUNNING FIRST STATIC ASSIGNMENT WITH TRAFFIC LIGHTS (equal distributed)")
 
     #starting with 0.5 at every two link node
         #hardCoded for simple
+
     firstGreen = {0: 0.8, 1: 1, 2: 1, 3: 0.2}
         #hardCoded for complex 
     #firstGreen = {0: 1, 1: 1, 2: 0.5, 3: 1, 4: 1, 5: 1, 6: 1, 7: 0.5, 8: 0.5, 9: 1, 10: 1, 11: 1, 12: 0.5, 13: 0.5, 14: 1, 15: 0.5}
@@ -44,10 +48,11 @@ def main():
 
     #initial msa without traffic lights
             #result2 = assignment.run('msa')
-    result = assignment.run_greens('msa', firstGreen,methodCost)
+    result = assignment.run_greens('msa', firstGreen,methodCost,g)
     #calculate the first green times according the first static assignment
-    print('flows: '+str(result.flows))
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network,methodGreen, firstGreen)
+    print('\nflows: '+str(result.flows))
+
+    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment, methodGreen, firstGreen, g)
     print('greens: '+ str(greens))
     greensPlot = {}
     for i in greens.keys():
@@ -55,12 +60,13 @@ def main():
 
 
     #show_network(g, flows = result.flows, euclidean=True)
-    
     #start the loop
     print('START THE LOOP')
         #initialise parameters and variables
     delta = 0.001
+
     maxLoops = 100
+    
     safety = 0
     gap = 1
     flows_gap = []
@@ -68,13 +74,14 @@ def main():
     cost_link_b = [result.link_costs[3]]
     while gap > delta and safety < maxLoops:
         safety += 1
-        print('loop = '+str(safety))
+        print('####\tLOOP = '+str(safety))
 
-        newResult = assignment.run_greens('msa', greens,methodCost)
+        newResult = assignment.run_greens('msa', greens,methodCost,g)
         print('flows: '+str(newResult.flows))
+        print('link costs: '+str(newResult.link_costs))
 
 
-        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment.internal_network, methodGreen, greens)
+        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment, methodGreen, greens, g)
         
 
         #calculating the gap 
