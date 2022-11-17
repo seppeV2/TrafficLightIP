@@ -37,7 +37,7 @@ def main():
 
     #starting with 0.5 at every two link node
         #hardCoded for simple
-    firstGreen = {0: 0.5, 1: 1, 2: 1, 3: 0.5}
+    firstGreen = {0: 0.8, 1: 1, 2: 1, 3: 0.2}
         #hardCoded for complex 
     #firstGreen = {0: 1, 1: 1, 2: 0.5, 3: 1, 4: 1, 5: 1, 6: 1, 7: 0.5, 8: 0.5, 9: 1, 10: 1, 11: 1, 12: 0.5, 13: 0.5, 14: 1, 15: 0.5}
 
@@ -47,16 +47,11 @@ def main():
     result = assignment.run_greens('msa', firstGreen,methodCost)
     #calculate the first green times according the first static assignment
     print('flows: '+str(result.flows))
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network,'webster')
+    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network,methodGreen, firstGreen)
     print('greens: '+ str(greens))
     greensPlot = {}
-    print('greensWebster: '+ str(greens))
     for i in greens.keys():
         greensPlot[i] = (greens[i],)
-    greens2 = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, 'P0')
-    print('greensP0: '+ str(greens2))
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment.internal_network, methodGreen, firstGreen)
-    print('greens: '+ str(greens))
 
 
     #show_network(g, flows = result.flows, euclidean=True)
@@ -65,7 +60,7 @@ def main():
     print('START THE LOOP')
         #initialise parameters and variables
     delta = 0.001
-    maxLoops = 25
+    maxLoops = 100
     safety = 0
     gap = 1
     flows_gap = []
@@ -123,16 +118,17 @@ def main():
     plt.figure()
     plt.plot(flows_gap)
     plt.title('Evolution of the gap during the iterations')
-    plt.show()
-
+    plt.show()"""
+    print(cost_link_a)
+    print(cost_link_b)
     plt.figure()
     plt.plot(cost_link_a)
     plt.plot(cost_link_b)
     plt.title('Evolution of the link costs on the two intersection links')
     plt.legend(['link 0','link 3'])
-    plt.show() """
+    plt.show()
 
 
 
-
+plt.close('all')
 main()

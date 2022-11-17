@@ -211,12 +211,14 @@ def get_green_times(caps, flows, network, method, oldGreenTimesDic):
             #reply with the right method
             if method == 'equisaturation':
                 greenTimes = equisaturationGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
+                for j in range(len(greenTimes)):
+                    greenDic[intersectionLinkIDs[j]] = greenTimes[j]
             elif method == 'P0':
                 greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
+                for j in range(len(greenTimes)):
+                    greenDic[intersectionLinkIDs[j]] = greenTimes[j]
 
 
-            for j in range(len(greenTimes)):
-                greenDic[intersectionLinkIDs[j]] = greenTimes[j]
 
     return dict(sorted(greenDic.items()))
                 

@@ -105,7 +105,7 @@ def P0policyGreenTimes(caps, flows, initial_greens, ff_tts, method):
     
 
     #this is needed to compare the results
-    theoreticalGreenTime = theoreticalP0Greens(caps, flows)
+    theoreticalGreenTime = theoreticalP0Greens(caps, flows, ff_tts)
     print('Theoretical P0 Green Times = {}\n'.format(theoreticalGreenTime))
     return greens
 
