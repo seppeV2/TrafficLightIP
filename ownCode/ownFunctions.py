@@ -130,7 +130,7 @@ def makeOwnToyNetwork(form):
 
         bottle_neck_capacity_speed =   [
             (100, 80),
-            (150, 80),
+            (150, 10000),
             (150, 80),
             (250, 80),
             
@@ -150,8 +150,6 @@ def makeOwnToyNetwork(form):
         g = relabel_graph(g)  # adding link and node ids, connectors and centroids
         odCsvFile = 'ODmatrixSimple.csv'
         return g, ODcentroids, odCsvFile
-
-
 
 #modified dyntapy function to change the capacity and the speed of each link
 def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_signalized = [], nodes_signalized=[], is_origin = []):
@@ -177,7 +175,6 @@ def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_s
         g.nodes[v]["signalized_node"] = nodes_signalized[count]
         g.nodes[v]["is_origin"] = is_origin[count]
         count += 1 
-    count2 = 0
     for u, v, data in g.edges.data():
         y1 = g.nodes[v]["y_coord"]
         x1 = g.nodes[v]["x_coord"]
@@ -187,13 +184,12 @@ def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_s
         data["capacity"] = capacity
         data["free_speed"] = free_speed
         data["lanes"] = lanes
-        if (u, v,) in bottleneck_edges:
+        if (u, v,) in (bottleneck_edges):
             index = bottleneck_edges.index((u,v))
             data["capacity"] = bottle_neck_capacity_speed[index][0]
             data["free_speed"] = bottle_neck_capacity_speed[index][1]
+            data["signalized"] = is_signalized[index]
         
-        data["signalized"] = is_signalized[count2]
-        count2 += 1
 
 #function to load the OD matrix in from .cvs file to numpy array 
 def getODGraph(ODMatrix, ODcentroids):
