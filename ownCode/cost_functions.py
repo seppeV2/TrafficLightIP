@@ -7,17 +7,21 @@ from ownFunctions import getIntersections
 bpr_b = parameters.static_assignment.bpr_beta
 bpr_a = parameters.static_assignment.bpr_alpha
 
-def __bpr_green_cost(flows, capacities, ff_tts, g_times):
+def __bpr_green_cost(flows, capacities, ff_tts, g_times,g):
     number_of_links = len(flows)
     costs = np.empty(number_of_links, dtype=np.float64)
+    signal_links = getIntersections(g)[2]
     for it, (f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
-        costs[it] = __bpr_green_cost_single(f, c, ff_tt,g_time)
+        if signal_links[it] == 1:
+            costs[it] = __bpr_green_cost_single(f, c, ff_tt,g_time)
+        else:
+            costs[it] = ff_tts[it]
     return costs
 
 #building our own bpr funtion 
 def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
-
+    #print('delay due to flow, {}, cap {}, ff_tt {} and green {} = {}'.format(flow, capacity,  ff_tt,g_time, np.multiply(bpr_a, pow((flow / (np.multiply(capacity ,g_time))), bpr_b))))
     cost = ff_tt * (1.0 + np.multiply(bpr_a, pow((flow / (np.multiply(capacity ,g_time))), bpr_b)))
     return cost
 
@@ -38,7 +42,7 @@ def __webster_two_term_green(flows, capacities, ff_tts, g_times,g):
 def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):
     dos = flow/(capacity*g_time)
     if dos >= 1:
-        cost = 25
+        cost = 10**10
     elif dos <= 0:
         cost = 0
     else:

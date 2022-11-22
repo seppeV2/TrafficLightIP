@@ -15,8 +15,6 @@ from cost_functions import __bpr_green_cost, __webster_two_term_green
 from dyntapy.graph_utils import (
     dijkstra_all,
     pred_to_paths,
-    _make_out_links,
-    _make_in_links,
 )
 
 import numpy as np
@@ -39,7 +37,7 @@ class GreenStaticAssignment(StaticAssignment):
         # multi-commodity (origin, destination or origin-destination)
 
         if methodAl == "msa":
-            costs, flows, gap_definition, gap = msa_green_flow_averaging(
+            costs, flows, gap_definition, gap, free_flow = msa_green_flow_averaging(
                 self.internal_network, self.internal_demand, greenTimes ,method, g ,store_iterations
             )
             result = StaticResult(
@@ -55,9 +53,9 @@ class GreenStaticAssignment(StaticAssignment):
         else:
             raise NotImplementedError(f"{method=} is not defined ")
         if not store_iterations:
-            return result
+            return result, free_flow
         else:
-            return result, dyntapy._context.iteration_states
+            return result, free_flow, dyntapy._context.iteration_states
 
 
 def msa_green_flow_averaging(
@@ -69,6 +67,11 @@ def msa_green_flow_averaging(
     f1 = np.zeros(network.tot_links)
     f2 = f1.copy()
     ff_tt = network.links.length / network.links.free_speed
+
+    #hardcoded (see path 1-3 as 1 link with twice the free flow cost)
+    ff_tt_adjusted = [ff_tt[0], 0.0001, ff_tt[2], 2*ff_tt[3]]
+
+
     greenTimes = list(greenTimesDic.values())
     while not converged:
         k = k + 1
@@ -76,14 +79,15 @@ def msa_green_flow_averaging(
             if method == 'bpr':
                 costs = __bpr_green_cost(
                     capacities=network.links.capacity,
-                    ff_tts=ff_tt,
+                    ff_tts=ff_tt_adjusted,
                     flows=f2,
-                    g_times = greenTimes
+                    g_times = greenTimes,
+                    g= g
                 )
             elif method == 'WebsterTwoTerm':
                 costs = __webster_two_term_green(
                     capacities=network.links.capacity,
-                    ff_tts=ff_tt,
+                    ff_tts=ff_tt_adjusted,
                     flows=f2,
                     g_times = greenTimes,
                     g = g,
@@ -92,18 +96,20 @@ def msa_green_flow_averaging(
             if method == 'bpr':
                 costs = __bpr_green_cost(
                     capacities=network.links.capacity,
-                    ff_tts=ff_tt,
+                    ff_tts=ff_tt_adjusted,
                     flows=f2,
                     g_times = greenTimes,
+                    g=g
                 )
             elif method == 'WebsterTwoTerm':
                 costs = __webster_two_term_green(
                     capacities=network.links.capacity,
-                    ff_tts=ff_tt,
+                    ff_tts=ff_tt_adjusted,
                     flows=f2,
                     g_times = greenTimes,
                     g = g,
                 )
+        
         ssp_costs, f2 = aon(demand, costs, network)
         
         # print("done")
@@ -117,13 +123,14 @@ def msa_green_flow_averaging(
             current_gap = gap(f1, costs, demand.to_destinations.values, ssp_costs)
             converged = current_gap < msa_delta or k == msa_max_iterations
 
+
             #to check in terminal if the msa converged or was ended by max iterations
             if converged == True: 
                 if current_gap < msa_delta: 
                     print('MSA step: really converged')
+
                 else: 
                     print('MSA step: max iteration reached')
-
             gaps.append(current_gap)
             if current_gap < last_gap:
                 best_flow_vector = f1
@@ -147,9 +154,10 @@ def msa_green_flow_averaging(
                     gap=np.ndarray(arr_gap),
                 )
                 iteration_states.append(result)
-    return best_costs, best_flow_vector, gap_definition, gaps
-
-def aon_websterTwoTerm(demand: InternalStaticDemand, costs, network: Network):
+        
+    return best_costs, best_flow_vector, gap_definition, gaps, ff_tt_adjusted
+""" 
+def aon_adjusted(demand: InternalStaticDemand, costs, network: Network):
     out_links = network.nodes.out_links
     flows = np.zeros(len(costs))
     number_of_od_pairs = 0
@@ -163,16 +171,21 @@ def aon_websterTwoTerm(demand: InternalStaticDemand, costs, network: Network):
         distances, pred = dijkstra_all(
             costs, out_links, source=i, is_centroid=network.nodes.is_centroid
         )
+        #hardcoded to fix
+        distances[1] = 0
+        #print('distances = {}'.format(distances))
         path_costs = np.empty(destinations.size, dtype=np.float32)
         for idx, dest in enumerate(destinations):
             path_costs[idx] = distances[dest]
             # TODO: Check for correctness
         paths = pred_to_paths(pred, i, destinations, out_links)
+        #print('paths = {}'.format(paths))
+        #print('demands = {}'.format(demands))
+        #print('path_costs = {}'.format(path_costs))
         for path, path_flow, path_cost in zip(paths, demands, path_costs):
-            print('path = {}'.format(path))
             ssp_costs[counter] = path_cost
             counter += 1
             for link_id in path:
                 flows[link_id] += path_flow
-    print('ssp_costs = {}'.format(ssp_costs))
-    return ssp_costs, flows
+    #print('flows = {}'.format(flows))
+    return ssp_costs, flows """

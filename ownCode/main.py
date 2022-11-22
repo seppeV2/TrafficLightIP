@@ -8,7 +8,7 @@ from dyntapy import show_network
 
 from ownFunctions import makeOwnToyNetwork, getODGraph
 from dyntapy_green_time_change import GreenStaticAssignment
-from greenTimes import get_green_times, find_paths_origin_to_signalized_link
+from greenTimes import get_green_times
 
 
 
@@ -22,8 +22,9 @@ def main():
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'P0'
+    methodGreen = 'equisaturation'
 
+    plot = False
 
     #setup
     print("STARTING SETUP")
@@ -38,7 +39,7 @@ def main():
 
     #starting with 0.5 at every two link node
         #hardCoded for simple
-    firstGreen = {0: 0.6, 1: 1, 2: 1, 3: 0.4}
+    firstGreen = {0: 0.5, 1: 1, 2: 1, 3: 0.5}
 
         #hardCoded for complex 
     #firstGreen = {0: 1, 1: 1, 2: 0.5, 3: 1, 4: 1, 5: 1, 6: 1, 7: 0.5, 8: 0.5, 9: 1, 10: 1, 11: 1, 12: 0.5, 13: 0.5, 14: 1, 15: 0.5}
@@ -46,11 +47,12 @@ def main():
 
     #initial msa without traffic lights
             #result2 = assignment.run('msa')
-    result = assignment.run_greens('msa', firstGreen,methodCost,g)
+    [result, ff_tt] = assignment.run_greens('msa', firstGreen,methodCost,g)
     #calculate the first green times according the first static assignment
     print('\nflows: '+str(result.flows))
+    print('free flow cost: {}'.format(ff_tt))
 
-    greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment, methodGreen, firstGreen, g)
+    greens,diff = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment, methodGreen, firstGreen, g, ff_tt)
     print('greens: '+ str(greens))
 
 
@@ -65,45 +67,53 @@ def main():
     flows_gap = []
     cost_link_a = [result.link_costs[0]]
     cost_link_b = [result.link_costs[3]]
+    diff_l = [diff]
+    prev_flow = np.zeros(len(result.flows))
     while gap > delta and safety < maxLoops:
         safety += 1
         print('####\tLOOP = '+str(safety))
 
-        newResult = assignment.run_greens('msa', greens,methodCost,g)
-        print('flows: '+str(newResult.flows))
-        print('link costs: '+str(newResult.link_costs))
+        newResult, ff_tt = assignment.run_greens('msa', greens,methodCost,g)
+        print('flows: {}'.format(newResult.flows))
+        print('link costs: {}'.format(newResult.link_costs))
+        print('free flow cost: {}'.format(ff_tt))
 
 
-        newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment, methodGreen, greens, g)
-        
+        newGreens, diff = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment, methodGreen, greens, g, ff_tt)
+        diff_l.append(diff)
 
         #calculating the gap 
-        gap = np.linalg.norm(np.subtract(result.flows, newResult.flows))
-        print('Gap = {}\n'.format(str(gap)))
+        gap = np.linalg.norm(np.subtract(result.flows, newResult.flows)) + np.linalg.norm(np.subtract(prev_flow, newResult.flows))
+        print('Gap = {}\n'.format(gap))
 
 
         #add intermediate results to the list to plot
         flows_gap.append(gap)
         cost_link_a.append(newResult.link_costs[0])
-        cost_link_b.append(newResult.link_costs[3]+newResult.link_costs[1])
+        cost_link_b.append(newResult.link_costs[3])
 
+        prev_flow = result.flows
         result = newResult
         greens = newGreens
 
     show_network(g, flows = result.flows, euclidean=True)
 
-    """  ## graph plots 
-    plt.figure()
-    plt.plot(flows_gap)
-    plt.title('Evolution of the gap during the iterations')
-    plt.show()
+    if plot:
+        ## graph plots 
+        plt.figure()
+        plt.plot(flows_gap)
+        plt.title('Evolution of the gap during the iterations')
+        
+        plt.figure()
+        plt.plot(cost_link_a)
+        plt.plot(cost_link_b)
+        plt.title('Evolution of the link costs on the two intersection links')
+        plt.legend(['link 0','link 3'])
 
-    plt.figure()
-    plt.plot(cost_link_a)
-    plt.plot(cost_link_b)
-    plt.title('Evolution of the link costs on the two intersection links')
-    plt.legend(['link 0','link 3'])
-    plt.show() """
+        plt.figure()
+        plt.plot(diff_l)
+        plt.title("evolution of policy constraint (gap = change between the two)")
+        plt.show()
 
 
 
