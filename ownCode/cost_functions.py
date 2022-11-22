@@ -34,10 +34,11 @@ def __webster_two_term_green(flows, capacities, ff_tts, g_times,g):
         assert c != 0
         if signal_links[it] == 1:
             costs[it] = __webster_two_term_green_single(f, c, ff_tt,g_time)
+            dos[it] = f/(c*g_time)
         else:
             costs[it] = ff_tts[it]
-        dos[it] = f/(c*g_time)
-    return costs
+            dos[it] = None
+    return costs, dos
 
 def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):
     dos = flow/(capacity*g_time)

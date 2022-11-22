@@ -17,14 +17,14 @@ def main():
         #two cost functions at the moment
         # 'bpr' to use the bpr cost function
         # 'WebsterTwoTerm' to use the webster two term delay cost function
-    methodCost = 'WebsterTwoTerm'
+    methodCost = 'bpr'
 
         #two green time policies
         # 'equisaturation' 
         # 'P0'
     methodGreen = 'equisaturation'
 
-    plot = False
+    plot = True
 
     #setup
     print("STARTING SETUP")
@@ -47,7 +47,7 @@ def main():
 
     #initial msa without traffic lights
             #result2 = assignment.run('msa')
-    [result, ff_tt] = assignment.run_greens('msa', firstGreen,methodCost,g)
+    [result, ff_tt, dos] = assignment.run_greens('msa', firstGreen,methodCost,g)
     #calculate the first green times according the first static assignment
     print('\nflows: '+str(result.flows))
     print('free flow cost: {}'.format(ff_tt))
@@ -67,21 +67,30 @@ def main():
     flows_gap = []
     cost_link_a = [result.link_costs[0]]
     cost_link_b = [result.link_costs[3]]
+    green_link_a = [greens[0]]
+    green_link_b = [greens[3]]
+    if methodCost == 'WebsterTwoTerm':
+        dos_link_a = [dos[0]]
+        dos_link_b = [dos[3]]
     diff_l = [diff]
     prev_flow = np.zeros(len(result.flows))
     while gap > delta and safety < maxLoops:
         safety += 1
         print('####\tLOOP = '+str(safety))
 
-        newResult, ff_tt = assignment.run_greens('msa', greens,methodCost,g)
+        newResult, ff_tt, dos = assignment.run_greens('msa', greens,methodCost,g)
         print('flows: {}'.format(newResult.flows))
         print('link costs: {}'.format(newResult.link_costs))
         print('free flow cost: {}'.format(ff_tt))
-
+        if methodCost == 'WebsterTwoTerm':
+            dos_link_a.append(dos[0])
+            dos_link_b.append(dos[3])
 
         newGreens, diff = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment, methodGreen, greens, g, ff_tt)
         diff_l.append(diff)
 
+        green_link_a.append(newGreens[0])
+        green_link_b.append(newGreens[3])
         #calculating the gap 
         gap = np.linalg.norm(np.subtract(result.flows, newResult.flows)) + np.linalg.norm(np.subtract(prev_flow, newResult.flows))
         print('Gap = {}\n'.format(gap))
@@ -100,9 +109,9 @@ def main():
 
     if plot:
         ## graph plots 
-        plt.figure()
+        """ plt.figure()
         plt.plot(flows_gap)
-        plt.title('Evolution of the gap during the iterations')
+        plt.title('Evolution of the gap during the iterations') """
         
         plt.figure()
         plt.plot(cost_link_a)
@@ -111,8 +120,22 @@ def main():
         plt.legend(['link 0','link 3'])
 
         plt.figure()
+        plt.plot(green_link_a)
+        plt.plot(green_link_b)
+        plt.title('Green time evolution')
+        plt.legend(['link 0', 'link 3'])
+        """ plt.figure()
         plt.plot(diff_l)
-        plt.title("evolution of policy constraint (gap = change between the two)")
+        plt.title("evolution of policy constraint (gap = change between the two)") """
+
+        if methodCost == 'WebsterTwoTerm':
+            plt.figure()
+            plt.plot(dos_link_a)
+            plt.plot(dos_link_b)
+            plt.title("Dos evolution through the msa steps")
+            plt.legend(['link 0', 'link 3'])
+
+
         plt.show()
 
 
