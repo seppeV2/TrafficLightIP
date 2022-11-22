@@ -130,7 +130,7 @@ def makeOwnToyNetwork(form):
 
         bottle_neck_capacity_speed =   [
             (100, 80),
-            (150, 10000),
+            (150, 80),
             (150, 80),
             (250, 80),
             
