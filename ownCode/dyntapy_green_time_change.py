@@ -24,7 +24,7 @@ from dyntapy.sta.utilities import aon
 
 gap_definition = "relative gap"
 msa_max_iterations = parameters.static_assignment.msa_max_iterations
-msa_delta = parameters.static_assignment.msa_delta
+msa_delta = 10**-4
 
 class GreenStaticAssignment(StaticAssignment):
 
@@ -77,7 +77,7 @@ def msa_green_flow_averaging(
         k = k + 1
         if k == 1:
             if method == 'bpr':
-                costs = __bpr_green_cost(
+                [costs, dos] = __bpr_green_cost(
                     capacities=network.links.capacity,
                     ff_tts=ff_tt_adjusted,
                     flows=f2,
@@ -94,7 +94,7 @@ def msa_green_flow_averaging(
                 )
         else:
             if method == 'bpr':
-                costs = __bpr_green_cost(
+                [costs, dos] = __bpr_green_cost(
                     capacities=network.links.capacity,
                     ff_tts=ff_tt_adjusted,
                     flows=f2,

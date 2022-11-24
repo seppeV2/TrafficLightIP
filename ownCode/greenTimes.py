@@ -4,7 +4,7 @@ from ownFunctions import getIntersections
 from cost_functions import __bpr_green_cost_single
 bpr_b = parameters.static_assignment.bpr_beta
 bpr_a = parameters.static_assignment.bpr_alpha
-msa_delta = parameters.static_assignment.msa_delta
+msa_delta = 10**-5
 
 
 def get_green_times(caps, flows, assignment, method, oldGreenTimesDic, g, ff_tt ):
@@ -81,7 +81,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
                     equal = False
             return equal
         greens = safety_greens(greens)
-        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < msa_delta) or (check_for_equality(equality))
+        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < 10**-5) or (check_for_equality(equality))
         previous_greens = greens
         greens = newGreens
 
@@ -125,9 +125,7 @@ def equisaturationGreenTimes(caps, flows, initial_greens, ff_tts, method):
 
      #this is needed to compare the results
     theoreticalGreenTime = theoreticalEquisaturationGreenTimes(caps, flows)
-    print('Theoretical Equisaturation Green Times = {}\n'.format(theoreticalGreenTime))
-
-    return greens,np.diff(equality)[0], theoreticalGreenTime
+    return greens,np.diff(equality)[0], []
 
 #finding the theoretical equisaturation green times
 def theoreticalEquisaturationGreenTimes(caps, flows):
@@ -177,7 +175,7 @@ def P0policyGreenTimes(caps, flows, initial_greens, ff_tts, method):
     #this is needed to compare the results
     theoreticalGreenTime = theoreticalP0Greens(caps, flows, ff_tts)
     print('Theoretical P0 Green Times = {}\n'.format(theoreticalGreenTime))
-    return greens,np.diff(equality)[0], theoreticalGreenTime
+    return greens,np.diff(equality)[0], []
 
 #finding the theoretical P0 green times
 def theoreticalP0Greens(caps, flows, ff_tts):
@@ -219,7 +217,7 @@ def theoreticalP0Greens(caps, flows, ff_tts):
 
 #delay = bpr function + free flow
 def get_link_delay(flow, cap , ff_tt, g_time):
-    return __bpr_green_cost_single(flow, cap, ff_tt , g_time) - ff_tt
+    return __bpr_green_cost_single(flow, cap, ff_tt , g_time)[0] - ff_tt
 
 """ def get_link_delay(flow, cap,  ff_tt, g_time, signalized_node,assignment, idx):
     #first check if there are also non intersection links part of the path
