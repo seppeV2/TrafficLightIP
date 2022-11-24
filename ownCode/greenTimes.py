@@ -35,15 +35,15 @@ def get_green_times(caps, flows, assignment, method, oldGreenTimesDic, g, ff_tt 
 
             #reply with the right method
             if method == 'equisaturation':
-                greenTimes,diff = equisaturationGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
+                greenTimes,diff, theorGreen = equisaturationGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
             elif method == 'P0':
-                greenTimes,diff = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
+                greenTimes,diff, theorGreen = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
 
 
             for j in range(len(greenTimes)):
                 greenDic[intersectionLinkIDs[j]] = greenTimes[j]
 
-    return dict(sorted(greenDic.items())), diff
+    return dict(sorted(greenDic.items())), diff, theorGreen
 
 #finding the green times at an iterative way
 #fixed flows are used 
@@ -127,7 +127,7 @@ def equisaturationGreenTimes(caps, flows, initial_greens, ff_tts, method):
     theoreticalGreenTime = theoreticalEquisaturationGreenTimes(caps, flows)
     print('Theoretical Equisaturation Green Times = {}\n'.format(theoreticalGreenTime))
 
-    return greens,np.diff(equality)[0]
+    return greens,np.diff(equality)[0], theoreticalGreenTime
 
 #finding the theoretical equisaturation green times
 def theoreticalEquisaturationGreenTimes(caps, flows):
@@ -177,7 +177,7 @@ def P0policyGreenTimes(caps, flows, initial_greens, ff_tts, method):
     #this is needed to compare the results
     theoreticalGreenTime = theoreticalP0Greens(caps, flows, ff_tts)
     print('Theoretical P0 Green Times = {}\n'.format(theoreticalGreenTime))
-    return greens,np.diff(equality)[0]
+    return greens,np.diff(equality)[0], theoreticalGreenTime
 
 #finding the theoretical P0 green times
 def theoreticalP0Greens(caps, flows, ff_tts):

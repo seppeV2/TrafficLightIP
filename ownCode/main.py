@@ -21,7 +21,7 @@ def main():
         #two cost functions at the moment
         # 'bpr' to use the bpr cost function
         # 'WebsterTwoTerm' to use the webster two term delay cost function
-    methodCost = 'WebsterTwoTerm'
+    methodCost = 'bpr'
 
         #two green time policies
         # 'equisaturation' 
@@ -59,7 +59,7 @@ def main():
     print('\nflows: '+str(result.flows))
     print('free flow cost: {}'.format(ff_tt))
     summary_string += "free flow cost: link 0 = {},   link 3 = {}\n\n".format(round(ff_tt[0],3), round(ff_tt[3],3))
-    greens,diff = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment, methodGreen, firstGreen, g, ff_tt)
+    greens,diff, _ = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment, methodGreen, firstGreen, g, ff_tt)
     print('greens: '+ str(greens))
 
 
@@ -94,7 +94,7 @@ def main():
             dos_link_a.append(dos[0])
             dos_link_b.append(dos[3])
 
-        newGreens, diff = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment, methodGreen, greens, g, ff_tt)
+        newGreens, diff, theoreticalGreenTime = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment, methodGreen, greens, g, ff_tt)
         diff_l.append(diff)
 
         green_link_a.append(newGreens[0])
@@ -116,6 +116,7 @@ def main():
     summary_string += "link flows: link 0 = {},   link 3 = {}\n".format(round(result.flows[0],3), round(result.flows[3],3))
     summary_string += "link costs: link 0 = {},   link 3 = {}\n".format(round(result.link_costs[0],3), round(result.link_costs[3],3))
     summary_string += "final green times: link 0 = {},   link 3 = {}\n".format(round(greens[0],3), round(greens[3],3))
+    summary_string += "final Theoretical green times: link 0 = {},   link 3 = {}\n".format(round(theoreticalGreenTime[0],3), round(theoreticalGreenTime[1],3))
     
 
     graph = show_network(g, flows = result.flows, euclidean=True,return_plot=True)
