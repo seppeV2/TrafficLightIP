@@ -1,5 +1,4 @@
-list = [6,6,6,6,6,6,6]
+list = [1,2,3,4,5,6]
 
-for idx, value in enumerate(list):
-    print(idx)
-    print(value)
+
+print(list[-3:])

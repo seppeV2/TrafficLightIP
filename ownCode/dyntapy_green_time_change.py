@@ -109,18 +109,19 @@ def msa_green_flow_averaging(
                     g_times = greenTimes,
                     g = g,
                 )
-        
         ssp_costs, f2 = aon(demand, costs, network)
         
+
         # print("done")
         if k == 1:
             converged = False
-            last_gap = 1
+            last_gap = 10
             gaps.append(last_gap)
 
         else:
             f2 = 1 / k * f2 + (k - 1) / k * f1
             current_gap = gap(f1, costs, demand.to_destinations.values, ssp_costs)
+            
             converged = current_gap < msa_delta or k == msa_max_iterations
 
 

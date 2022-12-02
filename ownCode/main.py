@@ -18,7 +18,7 @@ from bokeh.io import export_png
 
 #main function where we merge everything together
 def main():
-    demands = [80,100,115,150,200,400]
+    demands = [105]
     for demand_i in demands:
             #two cost functions at the moment
             # 'bpr' to use the bpr cost function
@@ -28,7 +28,7 @@ def main():
             #two green time policies
             # 'equisaturation' 
             # 'P0'
-        methodGreen = 'P0'
+        methodGreen = 'equisaturation'
 
         plot = True
 
@@ -122,8 +122,9 @@ def main():
             greens = newGreens
 
         summary_string += "link flows: link 0 = {},   link 3 = {}\n".format(round(result.flows[0],3), round(result.flows[3],3))
-        summary_string += "link costs: link 0 = {},   link 3 = {}\n".format(round(result.link_costs[0],3), round(result.link_costs[3],3))
+        summary_string += "link costs: link 0 = {},   link 3 = {}\n".format(round(cost_link_a[-1],3), round(cost_link_b[-1],3))
         summary_string += "final green times: link 0 = {},   link 3 = {}\n".format(round(greens[0],3), round(greens[3],3))
+        summary_string += "final 5 dos: link 0 = {},   link 3 = {}\n".format(np.round(dos_link_a[-5:],3), np.round(dos_link_a[-5:],3))
         if theoreticalGreenTime != []: 
             summary_string += "final Theoretical green times: link 0 = {},   link 3 = {}\n".format(round(theoreticalGreenTime[0],3), round(theoreticalGreenTime[1],3))
         
