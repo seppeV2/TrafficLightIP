@@ -9,7 +9,6 @@ from network_summary import create_summary
 from ownFunctions import makeOwnToyNetwork, getODGraph
 from dyntapy_green_time_change import GreenStaticAssignment
 from greenTimes import get_green_times
-from bokeh.embed import file_html
 from bokeh.resources import CDN
 from bokeh.io import export_png
 
@@ -124,7 +123,7 @@ def main():
         summary_string += "link flows: link 0 = {},   link 3 = {}\n".format(round(result.flows[0],3), round(result.flows[3],3))
         summary_string += "link costs: link 0 = {},   link 3 = {}\n".format(round(cost_link_a[-1],3), round(cost_link_b[-1],3))
         summary_string += "final green times: link 0 = {},   link 3 = {}\n".format(round(greens[0],3), round(greens[3],3))
-        summary_string += "final 5 dos: link 0 = {},   link 3 = {}\n".format(np.round(dos_link_a[-5:],3), np.round(dos_link_a[-5:],3))
+        summary_string += "final 5 dos: link 0 = {}\nfinal 5 dos:   link 3 = {}\n".format(np.round(dos_link_a[-5:],3), np.round(dos_link_a[-5:],3))
         if theoreticalGreenTime != []: 
             summary_string += "final Theoretical green times: link 0 = {},   link 3 = {}\n".format(round(theoreticalGreenTime[0],3), round(theoreticalGreenTime[1],3))
         
