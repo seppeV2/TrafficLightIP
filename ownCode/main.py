@@ -17,12 +17,12 @@ from bokeh.io import export_png
 
 #main function where we merge everything together
 def main():
-    demands = [105]
+    demands = [115]
     for demand_i in demands:
             #two cost functions at the moment
             # 'bpr' to use the bpr cost function
             # 'WebsterTwoTerm' to use the webster two term delay cost function
-        methodCost = 'WebsterTwoTerm'
+        methodCost = 'bpr'
 
             #two green time policies
             # 'equisaturation' 
@@ -33,11 +33,11 @@ def main():
 
         #setup
         print("STARTING SETUP")
-        g, ODcentroids, odFile = makeOwnToyNetwork('simple')
+        g, ODcentroids, odFile = makeOwnToyNetwork('merge_two_route')
         matrix = np.zeros([4,4])
         matrix[0,3] = demand_i
         ODMatrix_location = str(pathlib.Path(__file__).parent)+'/data/'+str(odFile)
-        np.savetxt(ODMatrix_location, matrix, delimiter=",")
+        #np.savetxt(ODMatrix_location, matrix, delimiter=",")
         
         ODMatrix = np.genfromtxt(ODMatrix_location, delimiter=',')
         odGraph = getODGraph(ODMatrix_location, ODcentroids)
@@ -51,7 +51,7 @@ def main():
 
         #starting with 0.5 at every two link node
             #hardCoded for simple
-        firstGreen = {0: 0.5, 1: 1, 2: 1, 3: 0.5}
+        firstGreen = {0: 0.1, 1: 1, 2: 1, 3: 0.9}
             #hardCoded for complex 
         #firstGreen = {0: 1, 1: 1, 2: 0.5, 3: 1, 4: 1, 5: 1, 6: 1, 7: 0.5, 8: 0.5, 9: 1, 10: 1, 11: 1, 12: 0.5, 13: 0.5, 14: 1, 15: 0.5}
         summary_string += "initial greens: link 0 = {},   link 3 = {}\n".format(firstGreen[0], firstGreen[3])

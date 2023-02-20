@@ -114,6 +114,8 @@ def safety_greens(greens):
             newGreens[idx] -= div
     #check if after adjustment all values are still larger than 0.01        
     safety_greens(newGreens)
+
+    
 #in here we will calculate the green times according to different policies
 #These will be used in the cost function of the static assignment
 def equisaturationGreenTimes(caps, flows, initial_greens, ff_tts, method):

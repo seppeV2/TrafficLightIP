@@ -1,8 +1,8 @@
 import networkx as nx
 import numpy as np
 
-from dyntapy import relabel_graph
-from dyntapy.demand_data import od_graph_from_matrix
+from dyntapy import relabel_graph, show_network
+from dyntapy.demand_data import od_graph_from_matrix, add_connectors, add_centroids
 from osmnx.distance import euclidean_dist_vec
 
 #building our own two rout DiGraph route (using nodes)
@@ -83,23 +83,27 @@ def makeOwnToyNetwork(form):
         set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed)
 
     
-        ODcentroids = np.array([np.array([10,25,35,35,55,55,65,80,75,15,30,60,75]), np.array([35,35,50,20,50,20,35,35,0,0,15,40,45])])
+        ODcentroids = np.array([np.array([10,30,80]), np.array([35,15,35])])
+        g = add_centroids(g, ODcentroids[0], ODcentroids[1], euclidean = True, method = 'turn')
         g = relabel_graph(g)  # adding link and node ids, connectors and centroids
         odCsvFile = 'ODmatrixComplex.csv'
         return g, ODcentroids, odCsvFile
-    elif form == 'simple':
+    elif form == 'merge_two_route':
         g = nx.DiGraph()
         ebunch_of_nodes = [
             (0, {"x_coord": 0, "y_coord": 30}),
             (1, {"x_coord": 30, "y_coord": 30}),
             (2, {"x_coord": 15, "y_coord": 15}),
             (3, {"x_coord": 35, "y_coord": 30}),
+            (4, {"x_coord": 0, "y_coord": 0}),
+            
             
         ]
 
         nodes_signalized = [
             0,
             1,
+            0,
             0,
             0,
         ]
@@ -109,6 +113,7 @@ def makeOwnToyNetwork(form):
             0,
             0,
             0,
+            1,
         ]
         g.add_nodes_from(ebunch_of_nodes)
 
@@ -117,6 +122,9 @@ def makeOwnToyNetwork(form):
             (0, 2),
             (2, 1),
             (1, 3),
+            (4, 2),
+            (3,0),
+            
             
         ]
 
@@ -125,6 +133,7 @@ def makeOwnToyNetwork(form):
             (0, 2),
             (2, 1),
             (1, 3),
+            (4, 2),
             
         ]
 
@@ -133,6 +142,7 @@ def makeOwnToyNetwork(form):
             (150, 80),
             (150, 80),
             (250, 80),
+            (150, 80),
             
         ]
 
@@ -141,12 +151,88 @@ def makeOwnToyNetwork(form):
             0,
             1,
             0,
+            0,
         ]
 
         g.add_edges_from(ebunch_of_edges)
         set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed, is_signalized, nodes_signalized, is_origin)
 
-        ODcentroids = np.array([np.array([0,30,20,35]), np.array([30,30,15,30])])
+        ODcentroids = np.array([np.array([0,0,35]), np.array([30,0,30])])
+        g = add_centroids(g, ODcentroids[0], ODcentroids[1], euclidean=True, method='turn')
+
+        g,dic = relabel_graph(g, return_inverse=True)  # adding link and node ids
+        print(dic)
+        odCsvFile = 'ODmatrixMerge.csv'
+        return g, ODcentroids, odCsvFile
+    elif form == 'simple':
+        g = nx.DiGraph()
+        ebunch_of_nodes = [
+            (0, {"x_coord": 0, "y_coord": 30}),
+            (1, {"x_coord": 30, "y_coord": 30}),
+            (2, {"x_coord": 15, "y_coord": 15}),
+            (3, {"x_coord": 35, "y_coord": 30}),
+            (4, {"x_coord": 0, "y_coord": 0}),
+            
+            
+        ]
+
+        nodes_signalized = [
+            0,
+            1,
+            0,
+            0,
+            0,
+        ]
+
+        is_origin  = [
+            1,
+            0,
+            0,
+            0,
+            1,
+        ]
+        g.add_nodes_from(ebunch_of_nodes)
+
+        ebunch_of_edges = [
+            (0, 1),
+            (0, 2),
+            (2, 1),
+            (1, 3),
+            (4, 2),
+            
+            
+        ]
+
+        bottle_neck_edges = [
+            (0, 1),
+            (0, 2),
+            (2, 1),
+            (1, 3),
+            (4, 2),
+            
+        ]
+
+        bottle_neck_capacity_speed =   [
+            (100, 80),
+            (150, 80),
+            (150, 80),
+            (250, 80),
+            (150, 80),
+            
+        ]
+
+        is_signalized = [
+            1,
+            0,
+            1,
+            0,
+            0,
+        ]
+
+        g.add_edges_from(ebunch_of_edges)
+        set_network_attributes(g, bottle_neck_edges, bottle_neck_capacity_speed, is_signalized, nodes_signalized, is_origin)
+
+        ODcentroids = np.array([np.array([0,30,20,35,0]), np.array([30,30,15,30,0])])
         g = relabel_graph(g)  # adding link and node ids, connectors and centroids
         odCsvFile = 'ODmatrixSimple.csv'
         return g, ODcentroids, odCsvFile
@@ -191,12 +277,14 @@ def set_network_attributes(g, bottleneck_edges, bottle_neck_capacity_speed, is_s
             data["signalized"] = is_signalized[index]
         
 
+
 #function to load the OD matrix in from .cvs file to numpy array 
 def getODGraph(ODMatrix, ODcentroids):
     xOD = ODcentroids[0]
     yOD = ODcentroids[1]
     matrix = np.genfromtxt(ODMatrix, delimiter=',')
-    return od_graph_from_matrix(matrix, X=xOD, Y=yOD)
+    g = od_graph_from_matrix(matrix, X=xOD, Y=yOD)
+    return g
 
 #function to find which nodes are intersection nodes so the links before these nodes have a different cost
 #function (including the green times)
