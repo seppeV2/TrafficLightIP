@@ -18,6 +18,8 @@ from bokeh.io import export_png
 
 #main function where we merge everything together
 def main():
+
+    #assign all variables 
         #two cost functions at the moment
         # 'bpr' to use the bpr cost function
         # 'WebsterTwoTerm' to use the webster two term delay cost function
@@ -28,19 +30,34 @@ def main():
         # 'P0'
     methodGreen = 'P0'
 
-    # every element of this list is a tuple (x,y) with the coordinates of an origin or destination
-    O_or_D = [(10,35),(30,15),(50,35),(90,35)]
+    # Chose your network type 
+        # complex
+        # merge
+        # simple
+    network_type = 'simple'
+
+    # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
+    # 
+    #O_or_D = [(10,35),(30,15),(50,35),(90,35)] #this one is saved for the complex network
+    #O_or_D = [(0,30),(0,0),(35,30)] #this one is saved for the merge network
+    O_or_D = [(0,30),(35,30)] #this one is saved for the simple network
 
     # This is a list of tuples (x,y,z) with x the origin, y the destination and z the flow (after relabeling)
     # X and Y = the location of the element in the O_or_D list 
-    OD_flow = [(0,3,90),(1,3,50),(2,3,50)]
+    #
+    #OD_flow = [(0,3,90),(1,3,50),(2,3,50)] #this one is saved for the complex network
+    #OD_flow = [(0,2,90),(1,2,60)] #this one is saved for the merge network
+    OD_flow = [(0,1,120)] #this one is saved for the merge network
 
     # Signalized nodes id (after relabeling!!)
-    signalized_nodes = [10,11]
+    #signalized_nodes = [10,11] #complex
+    #signalized_nodes = [4] #merge
+    signalized_nodes = [3] #simple
 
     #setup
     print("\nSTARTING SETUP\n")
-    g = makeOwnToyNetwork('complex')
+
+    g = makeOwnToyNetwork(network_type)
     g = addCentroidODNodes(g, O_or_D)
     g = set_signalized_nodes_and_links(g, signalized_nodes)
 
@@ -63,24 +80,22 @@ def main():
         #initialise parameters and variables
     delta = 10**-4
     maxLoops = 100
-    safety = 0
+    safety_loop = 0
     gap = 1
-    flows_gap = []
     prev_flow = np.zeros(len(result.flows))
-    while gap > delta and safety < maxLoops:
-        safety += 1
-        print('\n#### LOOP = {} ###'.format(safety))
+    while gap > delta and safety_loop < maxLoops:
+        safety_loop += 1
+        print('\n#### LOOP = {} ###'.format(safety_loop))
 
         newResult, ff_tt = assignment.run_greens('msa', greens,methodCost)
         #print('flows: {}'.format([(idx, flow) for idx, flow in enumerate(newResult.flows)]))
-        print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
+        #print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
+
         newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g)
         print('new greens = {}'.format(newGreens))
         #calculating the gap (difference o)
         gap = np.linalg.norm(np.subtract(result.flows, newResult.flows)) + np.linalg.norm(np.subtract(prev_flow, newResult.flows))
 
-        #add intermediate results to the list to plot
-        flows_gap.append(gap)
 
         prev_flow = result.flows
         result = newResult
