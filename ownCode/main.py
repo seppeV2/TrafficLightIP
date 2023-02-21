@@ -36,7 +36,6 @@ def main():
         #setup
         print("\nSTARTING SETUP\n")
         g, ODcentroids, odFile = makeOwnToyNetwork('merge_two_route')
-        #show_network(g, euclidean=True)
         g = set_signalized_nodes_and_links(g, signalized_nodes)
         matrix = np.zeros([4,4])
         matrix[0,3] = demand_i
@@ -74,8 +73,8 @@ def main():
             print('\n#### LOOP = {} ###'.format(safety))
 
             newResult, ff_tt = assignment.run_greens('msa', greens,methodCost)
-            print('flows: {}'.format([(idx, flow) for idx, flow in enumerate(newResult.flows)]))
-            print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
+            #print('flows: {}'.format([(idx, flow) for idx, flow in enumerate(newResult.flows)]))
+            #print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
             newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g)
             print('new greens = {}'.format(newGreens))
             #calculating the gap 

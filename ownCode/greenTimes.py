@@ -77,15 +77,17 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
                     equal = False
             return equal
         greens = safety_greens(greens)
-        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < 10**-5) or (check_for_equality(equality))
+        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < 10**-5) or (check_for_equality(equality)) or step < 500
         previous_greens = greens
         greens = newGreens
 
         if check_for_equality(equality):
             converged_reason = 'equality'
+        elif step > 500:
+            converged_reason = 'max steps'
         else:
             converged_reason = 'no change in greens' 
-        
+    print('equality conditions = {}'.format(equality))   
     print('MSA Green convergence: {}'.format(converged_reason))
     result_greens = {}
     for i in range(len(greens)):

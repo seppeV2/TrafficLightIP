@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 
-from dyntapy import relabel_graph
+from dyntapy import relabel_graph, show_network
 from dyntapy.demand_data import od_graph_from_matrix, add_centroids
 from osmnx.distance import euclidean_dist_vec
 
@@ -21,11 +21,11 @@ def makeOwnToyNetwork(form: str):
             (6, {"x_coord": 55, "y_coord": 20}),
             (7, {"x_coord": 65 , "y_coord": 35}),
             (8, {"x_coord": 80 , "y_coord": 35}),
-            (9, {"x_coord": 75 , "y_coord": 0}),
-            (10, {"x_coord": 15 , "y_coord": 0}),
+            (9, {"x_coord": 90 , "y_coord": 35}),
             (11, {"x_coord": 30 , "y_coord": 15}),
             (12, {"x_coord": 60 , "y_coord": 40}),#
             (13, {"x_coord": 75 , "y_coord": 45}),
+            (14, {"x_coord": 50 , "y_coord": 35}),
         ]
         g.add_nodes_from(ebunch_of_nodes)
         ebunch_of_edges = [
@@ -36,36 +36,35 @@ def makeOwnToyNetwork(form: str):
             (4, 6),
             (6, 7),
             (7, 8),
-            (8, 9),
-            (9, 10),
-            (10, 1),
             (11, 4),
-            (4, 11),
             (5, 12),
             (12, 7),
             (12,13),
             (13,8),
+            (8,9),
+            (14,7)
         ]
         bottle_neck_capacity_speed =   [
             (1200, 80),
-            (400, 80),
-            (800, 80),
-            (400, 80),
-            (800, 80),
-            (800, 80),
-            (1200, 80),
-            (1500, 80),
-            (1500, 80),
-            (1500, 80),
-            (300, 80),
+            (100, 80),
+            (150, 80),
+            (100, 80),
+            (200, 80),
             (200, 80),
             (300, 80),
-            (300, 80),
+            (1200, 80),
+            (100, 80),
+            (50, 80),
+            (50, 80),
+            (50, 80),
+            (1200, 80),
+            (100,80)
         ]
         g.add_edges_from(ebunch_of_edges)
+        
         set_network_attributes(g, ebunch_of_edges, bottle_neck_capacity_speed)
 
-        ODcentroids = np.array([np.array([10,30,80]), np.array([35,15,35])])
+        ODcentroids = np.array([np.array([10,30,50,90]), np.array([35,15,35,35])])
         g = add_centroids(g, ODcentroids[0], ODcentroids[1], euclidean = True, method = 'link')
         g = relabel_graph(g)  # adding link and node ids, connectors and centroids
         odCsvFile = 'ODmatrixComplex.csv'
@@ -158,8 +157,12 @@ def set_network_attributes(g, non_default_link, new_cap_speed):
         data["lanes"] = lanes
         if (u, v,) in (non_default_link):
             index = non_default_link.index((u,v))
-            data["capacity"] = new_cap_speed[index][0]
-            data["free_speed"] = new_cap_speed[index][1]
+            try:
+                data["capacity"] = new_cap_speed[index][0]
+                data["free_speed"] = new_cap_speed[index][1]
+            except IndexError:
+                data["capacity"] = capacity
+                data["free_speed"] = free_speed
     
         
 # method to set the certain nodes as signalized in a network
@@ -208,7 +211,6 @@ def generateFirstGreen(g):
             data['connector']
         except KeyError:
             non_connectors.append(data['link_id'])
-
 
         if v in signal_node_link_connect.keys():
             first_greens[data['link_id']] = 1/len(signal_node_link_connect[v])
