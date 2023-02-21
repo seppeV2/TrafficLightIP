@@ -15,7 +15,7 @@ def get_green_times(flows, assignment, method, oldGreenTimesDic, ff_tt, g ):
     greenDic = {}
 
 
-    for _,v,data in g.edges.data():
+    for _,_,data in g.edges.data():
         if link_summary[data['link_id']] == 0:
             greenDic[data['link_id']] = 1
 
@@ -34,7 +34,7 @@ def get_green_times(flows, assignment, method, oldGreenTimesDic, ff_tt, g ):
         if method == 'equisaturation':
             greenTimes = equisaturationGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method, signal_node_link_connect[sign_node_id])
         elif method == 'P0':
-            greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
+            greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method, signal_node_link_connect[sign_node_id])
         
         for link_id in greenTimes.keys():
             greenDic[link_id] = greenTimes[link_id]
@@ -127,16 +127,14 @@ def equisaturationGreenTimes(caps, flows, initial_greens, ff_tts, method, link_i
     return greens
 
 
-def P0policyGreenTimes(caps, flows, initial_greens, ff_tts, method):
+def P0policyGreenTimes(caps, flows, initial_greens, ff_tts, method, link_ids):
 
     #now calculate the green times iteratively 
-    greens,equality = msa_green_times(caps, flows, initial_greens, ff_tts, method)
-    print('check if the policy constraint is satisfied: {}\n'.format(equality))
-    print('MSA P0 Green Times = {}'.format(greens))
+    greens = msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids)
     
     return greens
 
 
 #delay = bpr function + free flow
 def get_link_delay(flow, cap , ff_tt, g_time):
-    return __bpr_green_cost_single(flow, cap, ff_tt , g_time)[0] - ff_tt
+    return __bpr_green_cost_single(flow, cap, ff_tt , g_time) - ff_tt

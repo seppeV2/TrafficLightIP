@@ -17,17 +17,17 @@ from bokeh.io import export_png
 
 #main function where we merge everything together
 def main():
-    demands = [115]
+    demands = [95]
     for demand_i in demands:
             #two cost functions at the moment
             # 'bpr' to use the bpr cost function
             # 'WebsterTwoTerm' to use the webster two term delay cost function
-        methodCost = 'bpr'
+        methodCost = 'WebsterTwoTerm'
 
             #two green time policies
             # 'equisaturation' 
             # 'P0'
-        methodGreen = 'equisaturation'
+        methodGreen = 'P0'
 
         signalized_nodes = [4]
 
@@ -74,7 +74,7 @@ def main():
 
             newResult, ff_tt = assignment.run_greens('msa', greens,methodCost)
             #print('flows: {}'.format([(idx, flow) for idx, flow in enumerate(newResult.flows)]))
-            #print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
+            print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
             newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g)
             print('new greens = {}'.format(newGreens))
             #calculating the gap 

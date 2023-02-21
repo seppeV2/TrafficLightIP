@@ -13,8 +13,7 @@ def __bpr_green_cost(flows, capacities, ff_tts, g_times, tot_links):
     for it,(f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
         if signal_links[it] == 1:
-            cost =__bpr_green_cost_single(f, c, ff_tt,g_time)
-            costs[it] = cost
+            costs[it] = __bpr_green_cost_single(f, c, ff_tt,g_time)
         else:
             costs[it] = ff_tts[it]
     return costs
@@ -25,20 +24,16 @@ def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
     cost = ff_tt * (1.0 + np.multiply(bpr_a, pow((flow / (np.multiply(capacity ,g_time))), bpr_b)))
     return cost
 
-def __webster_two_term_green(flows, capacities, ff_tts, g_times):
-    number_of_links = len(flows)
-    costs = np.empty(number_of_links, dtype=np.float64)
-    dos = np.empty(number_of_links, dtype=np.float64)
-    signal_links = getIntersections()[2]
+def __webster_two_term_green(flows, capacities, ff_tts, g_times, tot_links):
+    costs = np.empty(tot_links, dtype=np.float64)
+    signal_links = getIntersections(tot_links)[2]
     for it, (f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
         if signal_links[it] == 1:
             costs[it] = __webster_two_term_green_single(f, c, ff_tt,g_time)
-            dos[it] = f/(c*g_time)
         else:
             costs[it] = ff_tts[it]
-            dos[it] = None
-    return costs, dos
+    return costs
 
 def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):
     dos = flow/(capacity*g_time)

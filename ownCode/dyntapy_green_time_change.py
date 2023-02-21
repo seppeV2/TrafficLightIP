@@ -81,11 +81,12 @@ def msa_green_flow_averaging(
                     tot_links = network.tot_links
                 )
             elif method == 'WebsterTwoTerm':
-                [costs,dos] = __webster_two_term_green(
+                costs = __webster_two_term_green(
                     capacities=network.links.capacity,
                     ff_tts=ff_tt,
                     flows=f2,
                     g_times = greenTimes,
+                    tot_links = network.tot_links
                 )
         else:
             if method == 'bpr':
@@ -97,11 +98,12 @@ def msa_green_flow_averaging(
                     tot_links = network.tot_links
                 )
             elif method == 'WebsterTwoTerm':
-                [costs, dos] = __webster_two_term_green(
+                costs = __webster_two_term_green(
                     capacities=network.links.capacity,
                     ff_tts=ff_tt,
                     flows=f2,
                     g_times = greenTimes,
+                    tot_links = network.tot_links
                 )
         ssp_costs, f2 = aon(demand, costs, network)
 
