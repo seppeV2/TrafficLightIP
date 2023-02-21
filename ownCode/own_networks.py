@@ -58,14 +58,8 @@ def makeOwnToyNetwork(form: str):
             (100,80)
         ]
         g.add_edges_from(ebunch_of_edges)
-        
         set_network_attributes(g, ebunch_of_edges, bottle_neck_capacity_speed)
-
-        ODcentroids = np.array([np.array([10,30,50,90]), np.array([35,15,35,35])])
-        g = add_centroids(g, ODcentroids[0], ODcentroids[1], euclidean = True, method = 'link')
-        g = relabel_graph(g)  # adding link and node ids, connectors and centroids
-        odCsvFile = 'ODmatrixComplex.csv'
-        return g, ODcentroids, odCsvFile
+        return g
     
     elif form == 'merge_two_route':
         g = nx.DiGraph()
@@ -94,12 +88,7 @@ def makeOwnToyNetwork(form: str):
         ]
         g.add_edges_from(ebunch_of_edges)
         set_network_attributes(g, ebunch_of_edges, edge_capacity_speed)
-
-        ODcentroids = np.array([np.array([0,0,35]), np.array([30,0,30])])
-        g = add_centroids(g, ODcentroids[0], ODcentroids[1], euclidean=True, method='link')
-        g = relabel_graph(g)  # adding link and node ids
-        odCsvFile = 'ODmatrixMerge.csv'
-        return g, ODcentroids, odCsvFile
+        return g
     
     elif form == 'simple':
         g = nx.DiGraph()

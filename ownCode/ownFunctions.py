@@ -3,10 +3,21 @@ import numpy as np
 from dyntapy import relabel_graph, show_network
 from dyntapy.demand_data import od_graph_from_matrix
 from osmnx.distance import euclidean_dist_vec
+from dyntapy.demand_data import add_centroids
 
 global_signalized_nodes = []
 global_signalized_links = []
 signal_node_link_connect = {}
+
+# This function sets the centroids to the coordinates and connects them to the closest node
+def addCentroidODNodes(g, O_or_D_nodes):
+    centroid_x = np.array([x for (x,_) in O_or_D_nodes])
+    centroid_y = np.array([y for (_,y) in O_or_D_nodes])
+    g = add_centroids(g, X = centroid_x, Y = centroid_y, method = 'link', euclidean = True)
+    g = relabel_graph(g)  # adding link and node ids, connectors and centroids
+    return g
+            
+
 
 #modified dyntapy function to change the capacity and the speed of each link (this is easy for us to change the network)
 def set_network_attributes(g, non_default_link, new_cap_speed):
@@ -90,14 +101,16 @@ def generateFirstGreen(g):
             first_greens[data['link_id']] = 1
     return first_greens, non_connectors
 
-
-
 #function to load the OD matrix in from .cvs file to numpy array 
-def getODGraph(ODMatrix, ODcentroids):
-    xOD = ODcentroids[0]
-    yOD = ODcentroids[1]
-    matrix = np.genfromtxt(ODMatrix, delimiter=',')
-    return od_graph_from_matrix(matrix, X=xOD, Y=yOD)
+def getODGraph(OD_flow, O_or_D):
+    centroid_x = np.array([x for (x,_) in O_or_D])
+    centroid_y = np.array([y for (_,y) in O_or_D])
+    
+    matrix = np.zeros((len(O_or_D), len(O_or_D)))
+    for demand in OD_flow:
+        (o, d, flow) = demand
+        matrix[o,d] = flow
+    return od_graph_from_matrix(matrix, X=centroid_x, Y=centroid_y)
 
 # Not necessary anymore as the results are global variables but it is used in the code
 # so for the moment it is kept
