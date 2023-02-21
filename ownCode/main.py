@@ -54,6 +54,9 @@ def main():
     #signalized_nodes = [4] #merge
     signalized_nodes = [3] #simple
 
+    # show the plot in browser or make a summary
+    summary = True
+
     #setup
     print("\nSTARTING SETUP\n")
 
@@ -102,6 +105,10 @@ def main():
         greens = newGreens
 
     
-    show_network(g, flows=result.flows, euclidean=True)
+    if not summary:
+        show_network(g, flows=result.flows, euclidean=True)
+    else:
+        summary_string = 'SUMMARY: cost method = {}, heuristic = {}'.format(methodCost, methodGreen)
+        
 
 main()
