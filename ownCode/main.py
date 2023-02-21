@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 from dyntapy import show_network
-from network_summary import create_summary
+from network_summary import create_summary, demand_summary, result_summary
 from own_networks import makeOwnToyNetwork
 from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes
 from dyntapy_green_time_change import GreenStaticAssignment
@@ -34,25 +34,25 @@ def main():
         # complex
         # merge
         # simple
-    network_type = 'simple'
+    network_type = 'complex'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     # 
-    #O_or_D = [(10,35),(30,15),(50,35),(90,35)] #this one is saved for the complex network
+    O_or_D = [(10,35),(30,15),(50,35),(90,35)] #this one is saved for the complex network
     #O_or_D = [(0,30),(0,0),(35,30)] #this one is saved for the merge network
-    O_or_D = [(0,30),(35,30)] #this one is saved for the simple network
+    #O_or_D = [(0,30),(35,30)] #this one is saved for the simple network
 
     # This is a list of tuples (x,y,z) with x the origin, y the destination and z the flow (after relabeling)
     # X and Y = the location of the element in the O_or_D list 
     #
-    #OD_flow = [(0,3,90),(1,3,50),(2,3,50)] #this one is saved for the complex network
+    OD_flow = [(0,3,90),(1,3,50),(2,3,50)] #this one is saved for the complex network
     #OD_flow = [(0,2,90),(1,2,60)] #this one is saved for the merge network
-    OD_flow = [(0,1,120)] #this one is saved for the merge network
+    #OD_flow = [(0,1,120)] #this one is saved for the merge network
 
     # Signalized nodes id (after relabeling!!)
-    #signalized_nodes = [10,11] #complex
+    signalized_nodes = [10,11] #complex
     #signalized_nodes = [4] #merge
-    signalized_nodes = [3] #simple
+    #signalized_nodes = [3] #simple
 
     # show the plot in browser or make a summary
     summary = True
@@ -108,7 +108,13 @@ def main():
     if not summary:
         show_network(g, flows=result.flows, euclidean=True)
     else:
+        graph = show_network(g, flows = result.flows, euclidean=True,return_plot=True)
+        export_png(graph, filename=str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/network.png' )
+        listOfPlots = ['network.png']
         summary_string = 'SUMMARY: cost method = {}, heuristic = {}'.format(methodCost, methodGreen)
+        summary_string += demand_summary(O_or_D, OD_flow,signalized_nodes )
+        demand = sum([flow for (_,_,flow) in OD_flow])
+        create_summary(listOfPlots, summary_string, result_summary(result,greens), methodCost, methodGreen, network_type, demand)
         
 
 main()

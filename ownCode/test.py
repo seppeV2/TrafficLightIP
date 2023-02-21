@@ -1,3 +1,3 @@
 import numpy as np
 
-print(np.zeros((4,4)))
+print(7+1%8)
