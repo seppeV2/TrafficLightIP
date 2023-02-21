@@ -1,53 +1,50 @@
 import numpy as np
 from dyntapy.settings import parameters
-from ownFunctions import getIntersections, global_signalized_links, global_signalized_nodes
+from ownFunctions import getIntersections, global_signalized_links, global_signalized_nodes, signal_node_link_connect
 from cost_functions import __bpr_green_cost_single
 bpr_b = parameters.static_assignment.bpr_beta
 bpr_a = parameters.static_assignment.bpr_alpha
 msa_delta = 10**-5
 
 
-def get_green_times(caps, flows, assignment, method, oldGreenTimesDic, ff_tt ):
+def get_green_times(flows, assignment, method, oldGreenTimesDic, ff_tt, g ):
     network = assignment.internal_network
-    #first use a dictionary so we can order the costs to the right links after 
-    intersections = getIntersections(network.tot_links)[0]
+    caps = network.links.capacity
+
+    link_summary = getIntersections(network.tot_links)[2] #dictionary with link id and 1, 0 (signalized or not)
     greenDic = {}
-    for i in range(len(caps)):
-        if network.links.to_node[i] not in intersections:
-            if i not in greenDic.keys():
-                greenDic[i]= 1
-        else:
-            #first store all the data in an array of arrays per link
-            intersectionLinksFlows = []
-            intersectionCaps = []
-            intersectionFf_tt = []
-            intersectionLinkIDs = []
-            oldGreenTimes = []
-            for j in range(i,len(caps)):
-                if network.links.to_node[j] == network.links.to_node[i]:
-                    intersectionLinksFlows.append(flows[j])
-                    intersectionCaps.append(caps[j])
-                    intersectionLinkIDs.append(j)
-                    intersectionFf_tt.append(ff_tt[j])
-                    oldGreenTimes.append(oldGreenTimesDic[j])
-            intersections.remove(network.links.to_node[i])
-
-            #reply with the right method
-            if method == 'equisaturation':
-                greenTimes = equisaturationGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
-            elif method == 'P0':
-                greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
 
 
-            for j in range(len(greenTimes)):
-                greenDic[intersectionLinkIDs[j]] = greenTimes[j]
+    for _,v,data in g.edges.data():
+        if link_summary[data['link_id']] == 0:
+            greenDic[data['link_id']] = 1
+
+    for sign_node_id in signal_node_link_connect.keys():
+        intersectionCaps = []
+        intersectionLinksFlows = []
+        oldGreenTimes = []
+        intersectionFf_tt = []
+        for signal_link_id in signal_node_link_connect[sign_node_id]:
+            intersectionCaps.append(caps[signal_link_id])
+            intersectionLinksFlows.append(flows[signal_link_id])
+            oldGreenTimes.append(oldGreenTimesDic[signal_link_id])
+            intersectionFf_tt.append(ff_tt[signal_link_id])
+
+        #reply with the right method
+        if method == 'equisaturation':
+            greenTimes = equisaturationGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method, signal_node_link_connect[sign_node_id])
+        elif method == 'P0':
+            greenTimes = P0policyGreenTimes(intersectionCaps, intersectionLinksFlows, oldGreenTimes, intersectionFf_tt, method)
+        
+        for link_id in greenTimes.keys():
+            greenDic[link_id] = greenTimes[link_id]
 
     return dict(sorted(greenDic.items()))
 
 #finding the green times at an iterative way
 #fixed flows are used 
 #the return are the green times 
-def msa_green_times(caps, flows, initial_greens, ff_tts, method):
+def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
     converged = False
     greens = initial_greens
     step = 1
@@ -89,8 +86,12 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
         else:
             converged_reason = 'no change in greens' 
         
-    print('\nThe reason of green time msa convergence: {}'.format(converged_reason))
-    return greens,equality
+    print('MSA Green convergence: {}'.format(converged_reason))
+    result_greens = {}
+    for i in range(len(greens)):
+        result_greens[link_ids[i]] = greens[i]
+
+    return result_greens
 
 #safety function so a green time will never be lower than 0.01 if so it is set to 0.01, the sum of all green times stays 1
 def safety_greens(greens):
@@ -117,13 +118,11 @@ def safety_greens(greens):
     
 #in here we will calculate the green times according to different policies
 #These will be used in the cost function of the static assignment
-def equisaturationGreenTimes(caps, flows, initial_greens, ff_tts, method):
+def equisaturationGreenTimes(caps, flows, initial_greens, ff_tts, method, link_ids):
     #now calculate the green times iteratively 
-    greens,equality = msa_green_times(caps, flows, initial_greens, ff_tts, method)
-    print('check if the policy constraint is satisfied: {}\n'.format(equality))
-    print('MSA Equisaturation Green Times = {}'.format(greens))
+    greens = msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids)
     
-    return greens,
+    return greens
 
 
 def P0policyGreenTimes(caps, flows, initial_greens, ff_tts, method):

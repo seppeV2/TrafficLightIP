@@ -7,6 +7,7 @@ from osmnx.distance import euclidean_dist_vec
 
 global_signalized_nodes = []
 global_signalized_links = []
+signal_node_link_connect = {}
 #building our own two rout DiGraph route (using nodes)
 def makeOwnToyNetwork(form: str):
     if form == 'complex':
@@ -169,7 +170,7 @@ def set_network_attributes(g, non_default_link, new_cap_speed):
 def set_signalized_nodes_and_links(g, signalized_nodes = list):
     signalized_edges = []
     signalized_links = []
-    global global_signalized_nodes, global_signalized_links
+    global global_signalized_nodes, global_signalized_links, signal_node_link_connect
     global_signalized_nodes = signalized_nodes
 
     for v in g.nodes:
@@ -185,26 +186,34 @@ def set_signalized_nodes_and_links(g, signalized_nodes = list):
         if (u,v) in signalized_edges:
             data['signalized'] = 1
             signalized_links.append(data['link_id'])
+            try:
+                signal_node_link_connect[v].append(data['link_id'])
+            except KeyError:
+                signal_node_link_connect[v] = [data['link_id']]
         else:
             data['signalized'] = 0
     global_signalized_links = signalized_links
     g.update(edges = g.edges, nodes = g.nodes)
     return g
 
-# generate the first greens for all non connector links 
+# generate the first greens for all links (equal distribution when signalized, 1 when not) 
 # also return the list of non connector links (their link id)
 def generateFirstGreen(g):
     first_greens = {}
     non_connectors = []
 
-    for _,_,data in g.edges.data():
-        #only store the greens of the none connecting links
+    for _,v,data in g.edges.data():
+        # store the non connector links (just for visualization)
         try:
             data['connector']
         except KeyError:
-            
             non_connectors.append(data['link_id'])
-        first_greens[data['link_id']] = 1 if data['signalized'] == 0 else 0.5
+
+
+        if v in signal_node_link_connect.keys():
+            first_greens[data['link_id']] = 1/len(signal_node_link_connect[v])
+        else:
+            first_greens[data['link_id']] = 1
     return first_greens, non_connectors
 
 

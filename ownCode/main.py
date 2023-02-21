@@ -34,7 +34,7 @@ def main():
         plot = False
 
         #setup
-        print("STARTING SETUP")
+        print("\nSTARTING SETUP\n")
         g, ODcentroids, odFile = makeOwnToyNetwork('merge_two_route')
         #show_network(g, euclidean=True)
         g = set_signalized_nodes_and_links(g, signalized_nodes)
@@ -49,47 +49,38 @@ def main():
         demand = ODMatrix[np.nonzero(ODMatrix)][0]
         assignment = GreenStaticAssignment(g, odGraph)
 
-
-        print("RUNNING FIRST STATIC ASSIGNMENT WITH TRAFFIC LIGHTS (equal distributed)")
         # The first greens are automatically set to 0.5 to for all the intersecting links
         firstGreens, non_connectors = generateFirstGreen(g)
         print('first greens = {}'.format(firstGreens))
-        print('non_connectors = {}'.format(non_connectors))
+        print('non_connector links = {}'.format(non_connectors))
         
         #initial msa without traffic lights
-        [result, ff_tt] = assignment.run_greens('msa', firstGreens, methodCost)
+        result, ff_tt = assignment.run_greens('msa', firstGreens, methodCost)
         #calculate the first green times according the first static assignment
-        greens = get_green_times(assignment.internal_network.links.capacity,result.flows,assignment, methodGreen, firstGreens, ff_tt)
-        print('greens: '+ str(greens))
+        greens = get_green_times(result.flows,assignment, methodGreen, firstGreens, ff_tt, g)
  
 
         #start the loop
-        print('START THE LOOP')
+        print('\nSTART THE LOOP\n')
             #initialise parameters and variables
         delta = 10**-4
         maxLoops = 100
         safety = 0
         gap = 1
-        gap2 = 1
         flows_gap = []
         prev_flow = np.zeros(len(result.flows))
         while gap > delta and safety < maxLoops:
             safety += 1
-            print('#### LOOP = '+str(safety))
+            print('\n#### LOOP = {} ###'.format(safety))
 
             newResult, ff_tt = assignment.run_greens('msa', greens,methodCost)
-            print('flows: {}'.format(newResult.flows))
-            print('link costs: {}'.format(newResult.link_costs))
-            newGreens = get_green_times(assignment.internal_network.links.capacity, newResult.flows, assignment, methodGreen, greens, ff_tt)
-
+            print('flows: {}'.format([(idx, flow) for idx, flow in enumerate(newResult.flows)]))
+            print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
+            newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g)
+            print('new greens = {}'.format(newGreens))
             #calculating the gap 
                 #use flow gap
             gap = np.linalg.norm(np.subtract(result.flows, newResult.flows)) + np.linalg.norm(np.subtract(prev_flow, newResult.flows))
-                #use greens gap
-            gap2 = np.linalg.norm(np.subtract(list(greens.values()), list(newGreens.values())))
-            print('Gap = {}'.format(gap))
-            print('Green gap = {}\n'.format(gap2))
-
 
             #add intermediate results to the list to plot
             flows_gap.append(gap)
