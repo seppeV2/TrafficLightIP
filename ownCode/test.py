@@ -3,7 +3,7 @@ from dyntapy import show_network, relabel_graph
 from dyntapy.assignments import StaticAssignment
 import pathlib
 
-g, centroids, od_location = makeOwnToyNetwork('complex')
+g, centroids, od_location = makeOwnToyNetwork('merge_two_route')
 show_network(g, euclidean = True)
 ODMatrix_location = str(pathlib.Path(__file__).parent)+'/data/'+str(od_location)
 od_graph = getODGraph(ODMatrix_location,centroids)
