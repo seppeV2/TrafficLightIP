@@ -17,7 +17,7 @@ from bokeh.io import export_png
 
 #main function where we merge everything together
 def main():
-    demands = [95]
+    demands = [30]
     for demand_i in demands:
             #two cost functions at the moment
             # 'bpr' to use the bpr cost function
@@ -77,8 +77,7 @@ def main():
             print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
             newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g)
             print('new greens = {}'.format(newGreens))
-            #calculating the gap 
-                #use flow gap
+            #calculating the gap (difference o)
             gap = np.linalg.norm(np.subtract(result.flows, newResult.flows)) + np.linalg.norm(np.subtract(prev_flow, newResult.flows))
 
             #add intermediate results to the list to plot

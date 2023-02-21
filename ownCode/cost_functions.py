@@ -37,9 +37,9 @@ def __webster_two_term_green(flows, capacities, ff_tts, g_times, tot_links):
 
 def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):
     dos = flow/(capacity*g_time)
-    if dos >= 0.95:
+    if dos >= 0.99:
         cost = 10**10
-    elif dos <= 0.1:
+    elif dos <= 0.01:
         cost = ff_tt
     else:
         #assumption
