@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 
 from dyntapy import show_network
 from network_summary import create_summary
-from ownFunctions import makeOwnToyNetwork, getODGraph, set_signalized_nodes_and_links, generateFirstGreen
+from own_networks import makeOwnToyNetwork
+from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen
 from dyntapy_green_time_change import GreenStaticAssignment
 from greenTimes import get_green_times
 from bokeh.resources import CDN
@@ -29,13 +30,12 @@ def main():
             # 'P0'
         methodGreen = 'P0'
 
-        signalized_nodes = [4]
-
-        plot = False
+        # the ID of the nodes that are signalized (important, this is the ID AFTER relabeling)
+        signalized_nodes = [10,11]
 
         #setup
         print("\nSTARTING SETUP\n")
-        g, ODcentroids, odFile = makeOwnToyNetwork('merge_two_route')
+        g, ODcentroids, odFile = makeOwnToyNetwork('complex')
         g = set_signalized_nodes_and_links(g, signalized_nodes)
         matrix = np.zeros([4,4])
         matrix[0,3] = demand_i
