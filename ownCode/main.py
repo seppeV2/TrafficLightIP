@@ -4,7 +4,7 @@ import pathlib
 import matplotlib.pyplot as plt
 
 
-from dyntapy import show_network
+from visualisation_override import show_network, get_node_list, get_link_list
 from network_summary import create_summary, demand_summary, result_summary
 from own_networks import makeOwnToyNetwork
 from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes
@@ -67,6 +67,7 @@ def main():
     odGraph = getODGraph(OD_flow, O_or_D)
     assignment = GreenStaticAssignment(g, odGraph)
 
+
     # The first greens are automatically set to 0.5 to for all the intersecting links
     firstGreens, non_connectors = generateFirstGreen(g)
     print('first greens = {}'.format(firstGreens))
@@ -106,9 +107,9 @@ def main():
 
     
     if not summary:
-        show_network(g, flows=result.flows, euclidean=True)
+        show_network(g, flows=result.flows, euclidean=True, signalized_nodes=signalized_nodes, O_or_D=O_or_D)
     else:
-        graph = show_network(g, flows = result.flows, euclidean=True,return_plot=True)
+        graph = show_network(g, flows = result.flows, euclidean=True,return_plot=True, signalized_nodes=signalized_nodes, O_or_D=O_or_D)
         export_png(graph, filename=str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/network.png' )
         listOfPlots = ['network.png']
         summary_string = 'SUMMARY: cost method = {}, heuristic = {}'.format(methodCost, methodGreen)

@@ -51,7 +51,7 @@ def demand_summary(O_or_D, OD_flow, signalized_nodes):
     return string
 
 def result_summary(result,greens):
-    string = 'Summary of the results:\n\n\n'
+    string = 'legend: - black numbers = node_ids\n            - red numbers = signalized node_ids\n            - blue numbers = link_ids\n            - green numbers = OD_ids\n\nSummary of the results:\n\n'
     string1 = '- The link flows = '
     string2 = '- The link costs = '
     string3 = '- The link green times = '
