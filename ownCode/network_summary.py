@@ -6,7 +6,7 @@ from html2image import Html2Image
 import cv2
 
 def text_to_image(textString, size = 'summary'):
-    img = Image.new('RGB', (500, 400), (255, 255, 255)) if size == 'summary' else Image.new('RGB', (1000, 400), (255, 255, 255))
+    img = Image.new('RGB', (550, 400), (255, 255, 255)) if size == 'summary' else Image.new('RGB', (1050, 350), (255, 255, 255))
     d = ImageDraw.Draw(img)
     font = ImageFont.truetype(str(pathlib.Path(__file__).parent)+"/data/Gidole-Regular.ttf", size=17)
     d.text((20, 20), textString, fill=(0, 0, 0), font = font)
@@ -39,33 +39,38 @@ def create_summary(listOfPlots, string, property_string, method, policy, network
 
 
 def demand_summary(O_or_D, OD_flow, signalized_nodes):
-    string = '\n\nOD_nodes\n'
-    for idx, (x,y) in enumerate(O_or_D):
-        string+= '- {}: coordinates = ({},{})\n'.format(idx+1, x, y)
-    string += '\n\nFlows\n'
+    string = '\n\nDemands\n'
     for (o,d,flow) in OD_flow:
-        string+='- {} flow from: node {} -> node {}\n'.format(flow, o, d)
+        string+='- {} flow from: Origin_{} ->  Destination_{}\n'.format(flow, o, d)
     string += '\n\nSignalized nodes\n'
     for node_id in signalized_nodes:
         string += '- node {}\n'.format(node_id)
+    string += '\n\nLegend:\n- black numbers = node_ids\n- red numbers = signalized node_ids\n- blue numbers = link_ids\n- green numbers = OD_ids'
+
     return string
 
-def result_summary(result,greens):
-    string = 'legend: - black numbers = node_ids\n            - red numbers = signalized node_ids\n            - blue numbers = link_ids\n            - green numbers = OD_ids\n\nSummary of the results:\n\n'
+def result_summary(result,greens, capacities, non_connectors):
+    step = 0
+    string = '\nSummary of the results:\n\n'
     string1 = '- The link flows = '
     string2 = '- The link costs = '
     string3 = '- The link green times = '
+    string4 = '- The link capacities = '
+    for idx, (flow, cost, green, cap) in enumerate(zip(result.flows, result.link_costs, greens.values(), capacities)):
+        if idx in non_connectors:
+            string1 += '({}, {}), '.format(idx,round(flow,2)) 
+            string2 += '({}, {}), '.format(idx,round(cost,2))        
+            string3 += '({}, {}), '.format(idx,round(green,2))
+            string4 += '({}, {}), '.format(idx,round(cap,2))
+            step+=1
 
-    for idx, (flow, cost, green) in enumerate(zip(result.flows, result.link_costs, greens.values())):
-        string1 += '({}, {}), '.format(idx,round(flow,2)) 
-        string2 += '({}, {}), '.format(idx,round(cost,2))        
-        string3 += '({}, {}), '.format(idx,round(green,2))
-        if (idx+1)%8 == 0:
-            string1 += '\n                          '
-            string2 += '\n                          '
-            string3 += '\n                                    '
-
+            if (step)%10 == 0:
+                string1 += '\n                          '
+                string2 += '\n                          '
+                string3 += '\n                                    '
+                string4 += '\n                                 '
     string1 += '\n\n'
     string2 += '\n\n'
     string3 += '\n\n'
-    return string+string1+string2+string3
+    string4 += '\n\n'
+    return string+string1+string2+string3+string4
