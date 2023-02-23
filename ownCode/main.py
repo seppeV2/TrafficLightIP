@@ -69,7 +69,10 @@ def main():
 
 
     # The first greens are automatically set to 0.5 to for all the intersecting links
-    firstGreens, non_connectors = generateFirstGreen(g)
+    # For the 'two link merge intersections' a different distribution can be chosen for the initial green times
+    # the more link merge intersections are always equal distributed no mather what argument is given, the argument is  
+    # a string type, chose one of the following: '[40,60]','[60,40]','[20,80]','[80,20]' or 'equal' for the respective distribution (in percentage)
+    firstGreens, non_connectors = generateFirstGreen(g,distribution = 'equal')
     print('first greens = {}'.format(firstGreens))
     print('non_connector links = {}'.format(non_connectors))
     

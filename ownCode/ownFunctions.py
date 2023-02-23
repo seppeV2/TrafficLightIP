@@ -84,7 +84,8 @@ def set_signalized_nodes_and_links(g, signalized_nodes = list):
 
 # generate the first greens for all links (equal distribution when signalized, 1 when not) 
 # also return the list of non connector links (their link id)
-def generateFirstGreen(g):
+# An optional parameter 'distribution' is included for test purposes (to check if the starting greens have an impact)
+def generateFirstGreen(g, distribution: str = 'equal'):
     first_greens = {}
     non_connectors = []
 
@@ -96,7 +97,25 @@ def generateFirstGreen(g):
             non_connectors.append(data['link_id'])
 
         if v in signal_node_link_connect.keys():
-            first_greens[data['link_id']] = 1/len(signal_node_link_connect[v])
+            # When more than two links are merging in an intersection, the option
+            # of equal split is always chosen 
+            if distribution == 'equal' or len(signal_node_link_connect[v]) > 2:
+                first_greens[data['link_id']] = 1/len(signal_node_link_connect[v])
+            else:
+                if distribution == '40-60':
+                    dis = [0.40,0.60]
+                elif distribution == '20-80':
+                    dis = [0.20,0.80]
+                elif distribution == '60-40':
+                    dis = [0.60,0.40]
+                elif distribution == '80-20':
+                    dis = [0.80,0.20]
+                else:
+                    # when a wrong statement is given use the equal distribution (to make the code more robust)
+                    dis = [0.5,0.5]
+                for idx, id in enumerate(signal_node_link_connect[v]):
+                        if id == data['link_id']:
+                            first_greens[data['link_id']] = dis[idx]
         else:
             first_greens[data['link_id']] = 1
     return first_greens, non_connectors
