@@ -23,12 +23,12 @@ def main():
         #two cost functions at the moment
         # 'bpr' to use the bpr cost function
         # 'WebsterTwoTerm' to use the webster two term delay cost function
-    methodCost = 'bpr'
+    methodCost = 'WebsterTwoTerm'
 
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'equisaturation'
+    methodGreen = 'P0'
 
     # Chose your network type 
         # complex
@@ -46,7 +46,7 @@ def main():
     # X and Y = the location of the element in the O_or_D list 
     #
     #OD_flow = [(0,3,90),(1,3,50),(2,3,50)] #this one is saved for the complex network
-    OD_flow = [(0,2,105),(1,2,60)] #this one is saved for the merge network
+    OD_flow = [(0,2,80),(1,2,40)] #this one is saved for the merge network
     #OD_flow = [(0,1,120)] #this one is saved for the merge network
 
     # Signalized nodes id (after relabeling!!)
