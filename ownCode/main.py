@@ -34,28 +34,31 @@ def main():
         # complex
         # merge
         # simple
-    network_type = 'merge'
+    network_type = 'two-node'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
-    # 
+    
     #O_or_D = [(10,35),(30,15),(50,35),(90,35)] #this one is saved for the complex network
-    O_or_D = [(0,30),(0,0),(35,30)] #this one is saved for the merge network
+    #O_or_D = [(0,30),(0,0),(35,30)] #this one is saved for the merge network
     #O_or_D = [(0,30),(35,30)] #this one is saved for the simple network
+    O_or_D = [(0,30),(65,30)] #this one is saved for the two node signal network
 
     # This is a list of tuples (x,y,z) with x the origin, y the destination and z the flow (after relabeling)
     # X and Y = the location of the element in the O_or_D list 
-    #
+    
     #OD_flow = [(0,3,90),(1,3,50),(2,3,50)] #this one is saved for the complex network
-    OD_flow = [(0,2,80),(1,2,40)] #this one is saved for the merge network
+    #OD_flow = [(0,2,80),(1,2,40)] #this one is saved for the merge network
     #OD_flow = [(0,1,120)] #this one is saved for the merge network
+    OD_flow = [(0,1,120)] #this one is saved for the two node signal network
 
     # Signalized nodes id (after relabeling!!)
     #signalized_nodes = [10,11] #complex
-    signalized_nodes = [4] #merge
+    #signalized_nodes = [4] #merge
     #signalized_nodes = [3] #simple
+    signalized_nodes = [3,5]
 
     # show the plot in browser or make a summary
-    summary = True
+    summary = False
 
     #setup
     print("\nSTARTING SETUP\n")
