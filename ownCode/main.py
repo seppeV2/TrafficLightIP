@@ -17,7 +17,7 @@ from bokeh.io import export_png
 
 #main function where we merge everything together
 def main():
-    demands = [105]
+    demands = [95,105,115,125,145]
     for demand_i in demands:
             #two cost functions at the moment
             # 'bpr' to use the bpr cost function
