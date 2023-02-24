@@ -38,7 +38,7 @@ def main():
         # two-node
         # two-node-two-od
         # two-node-three-od
-    network_type = 'simple'
+    network_type = 'two-node-three-od'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     

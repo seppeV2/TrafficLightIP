@@ -4,7 +4,7 @@ from ownFunctions import getIntersections, global_signalized_links, global_signa
 from cost_functions import __bpr_green_cost_single
 bpr_b = parameters.static_assignment.bpr_beta
 bpr_a = parameters.static_assignment.bpr_alpha
-msa_delta = 10**-5
+msa_delta = parameters.static_assignment.msa_delta
 
 
 def get_green_times(flows, assignment, method, oldGreenTimesDic, ff_tt, g ):
@@ -48,7 +48,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
     converged = False
     greens = initial_greens
     step = 1
-    previous_greens = np.multiply(initial_greens,1)
+    previous_greens = np.multiply(initial_greens,2)
     while not converged:
         step+=1
         if method =='equisaturation':
@@ -62,26 +62,29 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
         maxIndex = equality.index(max(equality))
         #all to the largest, non to the others but with safety (never assign 0 bc sometimes dividing by gi)
         change = 0
-        
+
+        # AON can be just one and zeros because only used to assign the green time 
+        """
         for i in range(len(equality)):
             if i != maxIndex:
                 green_time_aon[i] = 0.01
                 change += 0.01
+        """
         green_time_aon[maxIndex] = 1-change
-
+        
+        msa_step = step
         #apply the msa step
-        newGreens = [((1 / step) * g_aon) + ((step - 1) / step * g) for g_aon, g in zip(green_time_aon, greens)]
+        newGreens = [((1 / msa_step) * g_aon) + (((msa_step - 1) / msa_step) * g) for g_aon, g in zip(green_time_aon, greens)]
+        newGreens = safety_greens(newGreens)
         def check_for_equality(list):
             equal = True
             for i in range(len(list)-1):
                 if abs(list[i] - list[i+1]) > msa_delta:
                     equal = False
             return equal
-        greens = safety_greens(greens)
-        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < 10**-5) or (check_for_equality(equality)) or step < 500
+        converged = (np.linalg.norm(np.subtract(newGreens,greens)) + np.linalg.norm(np.subtract(newGreens, previous_greens)) < 10**-5) or (check_for_equality(equality)) or step > 1500
         previous_greens = greens
         greens = newGreens
-
         if check_for_equality(equality):
             converged_reason = 'equality'
         elif step > 500:
@@ -116,7 +119,7 @@ def safety_greens(greens):
             #newGreens[idx] = round(newGreens[idx] - div, 6)
             newGreens[idx] -= div
     #check if after adjustment all values are still larger than 0.01        
-    safety_greens(newGreens)
+    return safety_greens(newGreens)
 
     
 #in here we will calculate the green times according to different policies
