@@ -2,6 +2,7 @@ import pathlib
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 from html2image import Html2Image
+import os
 #install opencv-python for this (via pip)
 import cv2
 
@@ -14,7 +15,7 @@ def text_to_image(textString):
     img.save(str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/'+file_name)
     return file_name
 
-def create_summary(listOfPlots, string, method, policy, demand):
+def create_summary(listOfPlots, string, method, policy, demand, greenPolicy):
     text_image = text_to_image(string)
     listOfPlots.insert(1,text_image)
     vstack = []
@@ -31,8 +32,9 @@ def create_summary(listOfPlots, string, method, policy, demand):
             hstack.append(np.full((400,500,3),255, np.uint8))
             vstack.append(np.hstack(hstack))      
     vstack = np.vstack(vstack)
-
-    cv2.imwrite(str(pathlib.Path(__file__).parent)+'/summaryFiles/summary_{}_{}_D={}.png'.format(method, policy, demand), vstack)
+    path = str(pathlib.Path(__file__).parent)+'/summaryFiles/D={}/'.format(demand)
+    os.makedirs(path, exist_ok=True)
+    cv2.imwrite(path+'summary_{}_{}_{}.png'.format(method, policy, greenPolicy), vstack)
 
 
 

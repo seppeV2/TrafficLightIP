@@ -13,21 +13,38 @@ from bokeh.resources import CDN
 from bokeh.io import export_png
 
 
+def autoRunMain():
+    w = 'WebsterTwoTerm'
+    b = 'bpr'
+    e = 'equisaturation'
+    p = 'P0'
+    g1 = {0: 0.5, 1: 1, 2: 1, 3: 0.5}
+    g2 = {0: 0.4, 1: 1, 2: 1, 3: 0.6}
+    g3 = {0: 0.2, 1: 1, 2: 1, 3: 0.8}
+    g4 = {0: 0.6, 1: 1, 2: 1, 3: 0.4}
+    g5 = {0: 0.8, 1: 1, 2: 1, 3: 0.2}
 
+    greens = [g1,g2,g3,g4,g5]
+    green_policy = ['50-50','40-60','20-80','60-40','80-20']
+    cases = [(b,e),(b,p),(w,e),(w,p)]
+
+    for idx,green in enumerate(greens): 
+        for (cost, policy) in cases:
+            main(cost,policy,green, green_policy[idx])
 
 #main function where we merge everything together
-def main():
+def main(methodCost, methodGreen, firstGreen, greenPolicy):
     demands = [95,105,115,125,145]
     for demand_i in demands:
             #two cost functions at the moment
             # 'bpr' to use the bpr cost function
             # 'WebsterTwoTerm' to use the webster two term delay cost function
-        methodCost = 'WebsterTwoTerm'
+        #methodCost = 'WebsterTwoTerm'
 
             #two green time policies
             # 'equisaturation' 
             # 'P0'
-        methodGreen = 'equisaturation'
+        #methodGreen = 'equisaturation'
 
         plot = True
 
@@ -51,7 +68,7 @@ def main():
 
         #starting with 0.5 at every two link node
             #hardCoded for simple
-        firstGreen = {0: 0.5, 1: 1, 2: 1, 3: 0.5}
+        #firstGreen = {0: 0.5, 1: 1, 2: 1, 3: 0.5}
             #hardCoded for complex 
         #firstGreen = {0: 1, 1: 1, 2: 0.5, 3: 1, 4: 1, 5: 1, 6: 1, 7: 0.5, 8: 0.5, 9: 1, 10: 1, 11: 1, 12: 0.5, 13: 0.5, 14: 1, 15: 0.5}
         summary_string += "initial greens: link 0 = {},   link 3 = {}\n".format(firstGreen[0], firstGreen[3])
@@ -166,11 +183,10 @@ def main():
             listOfPlots.append('dos.png')
                 
 
-        print(summary_string)
-        create_summary(listOfPlots, summary_string, methodCost, methodGreen, demand )
+        #print(summary_string)
+        create_summary(listOfPlots, summary_string, methodCost, methodGreen, demand, greenPolicy )
 
 
+autoRunMain()
 
 
-
-main()

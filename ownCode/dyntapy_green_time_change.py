@@ -115,7 +115,7 @@ def msa_green_flow_averaging(
         # print("done")
         if k == 1:
             converged = False
-            last_gap = 10
+            last_gap = 10**15
             gaps.append(last_gap)
 
         else:
@@ -123,7 +123,6 @@ def msa_green_flow_averaging(
             current_gap = gap(f1, costs, demand.to_destinations.values, ssp_costs)
             
             converged = current_gap < msa_delta or k == msa_max_iterations
-
 
             #to check in terminal if the msa converged or was ended by max iterations
             if converged == True: 
