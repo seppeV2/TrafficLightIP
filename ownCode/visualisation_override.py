@@ -14,7 +14,7 @@ node_color = parameters.visualization.node_color
 centroid_color = parameters.visualization.centroid_color
 node_size = parameters.visualization.node_size
 
-def show_network(
+def show_network_own(
     g,
     flows=None,
     link_kwargs=dict(),

@@ -122,6 +122,84 @@ def makeOwnToyNetwork(form: str):
         g.add_edges_from(ebunch_of_edges)
         set_network_attributes(g, ebunch_of_edges, edge_capacity_speed)
         return g
+    elif form == 'two-node-two-od':
+        g = nx.DiGraph()
+        ebunch_of_nodes = [
+            (0, {"x_coord": 0, "y_coord": 30}),
+            (1, {"x_coord": 30, "y_coord": 30}),
+            (2, {"x_coord": 15, "y_coord": 15}),
+            (3, {"x_coord": 60, "y_coord": 30}),
+            (4, {"x_coord": 45, "y_coord": 15}),
+            (5, {"x_coord": 65, "y_coord": 30}),
+            (6, {"x_coord": 30, "y_coord": 0}),
+
+        ]
+        g.add_nodes_from(ebunch_of_nodes)
+        ebunch_of_edges = [
+            (0, 1),
+            (0, 2),
+            (2, 1),
+            (1, 3),
+            (1, 4),
+            (4, 3),
+            (3, 5),
+            (6, 4)
+        ]
+        edge_capacity_speed =   [
+            (100, 80),
+            (150, 80),
+            (150, 80),
+            (150, 80),
+            (100, 80),
+            (100, 80),
+            (250, 80),
+            (100, 80)
+
+        ]
+        g.add_edges_from(ebunch_of_edges)
+        set_network_attributes(g, ebunch_of_edges, edge_capacity_speed)
+        return g
+    
+    elif form == 'two-node-three-od':
+        g = nx.DiGraph()
+        ebunch_of_nodes = [
+            (0, {"x_coord": 0, "y_coord": 30}),
+            (1, {"x_coord": 30, "y_coord": 30}),
+            (2, {"x_coord": 15, "y_coord": 15}),
+            (3, {"x_coord": 60, "y_coord": 30}),
+            (4, {"x_coord": 45, "y_coord": 15}),
+            (5, {"x_coord": 65, "y_coord": 30}),
+            (6, {"x_coord": 30, "y_coord": 0}),
+            (7, {"x_coord": 0, "y_coord": 0}),
+
+        ]
+        g.add_nodes_from(ebunch_of_nodes)
+        ebunch_of_edges = [
+            (0, 1),
+            (0, 2),
+            (2, 1),
+            (1, 3),
+            (1, 4),
+            (4, 3),
+            (3, 5),
+            (6, 4),
+            (7, 2)
+        ]
+        edge_capacity_speed =   [
+            (100, 80),
+            (150, 80),
+            (150, 80),
+            (150, 80),
+            (100, 80),
+            (100, 80),
+            (250, 80),
+            (100, 80),
+            (150, 80)
+
+        ]
+        g.add_edges_from(ebunch_of_edges)
+        set_network_attributes(g, ebunch_of_edges, edge_capacity_speed)
+        return g
     elif form == 'simple':
         g = nx.DiGraph()
         ebunch_of_nodes = [

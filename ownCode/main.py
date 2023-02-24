@@ -4,11 +4,12 @@ import pathlib
 import matplotlib.pyplot as plt
 
 
-from visualisation_override import show_network, get_node_list, get_link_list
+from visualisation_override import show_network_own, get_node_list, get_link_list
 from network_summary import create_summary, demand_summary, result_summary
 from own_networks import makeOwnToyNetwork
 from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes
 from dyntapy_green_time_change import GreenStaticAssignment
+from dyntapy import show_network
 from greenTimes import get_green_times
 from bokeh.resources import CDN
 from bokeh.io import export_png
@@ -23,40 +24,48 @@ def main():
         #two cost functions at the moment
         # 'bpr' to use the bpr cost function
         # 'WebsterTwoTerm' to use the webster two term delay cost function
-    methodCost = 'WebsterTwoTerm'
+    methodCost = 'bpr'
 
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'equisaturation'
+    methodGreen = 'P0'
 
     # Chose your network type 
         # complex
         # merge
         # simple
         # two-node
-    network_type = 'complex'
+        # two-node-two-od
+        # two-node-three-od
+    network_type = 'two-node-three-od'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     
-    O_or_D = [(10,35),(30,15),(50,35),(90,35)] #this one is saved for the complex network
+    #O_or_D = [(10,35),(30,15),(50,35),(90,35)] #this one is saved for the complex network
     #O_or_D = [(0,30),(0,0),(35,30)] #this one is saved for the merge network
     #O_or_D = [(0,30),(35,30)] #this one is saved for the simple network
     #O_or_D = [(0,30),(65,30)] #this one is saved for the two node signal network
+    #O_or_D = [(0,30),(30,0),(65,30)] #this one is saved for the two node signal two od network
+    O_or_D = [(0,30),(30,0),(0,0),(65,30)] #this one is saved for the two node signal three od network
 
     # This is a list of tuples (x,y,z) with x the origin, y the destination and z the flow (after relabeling)
     # X and Y = the location of the element in the O_or_D list 
     
-    OD_flow = [(0,3,30),(1,3,30),(2,3,35)] #this one is saved for the complex network
+    #OD_flow = [(0,3,30),(1,3,30),(2,3,35)] #this one is saved for the complex network
     #OD_flow = [(0,2,80),(1,2,40)] #this one is saved for the merge network
     #OD_flow = [(0,1,120)] #this one is saved for the merge network
     #OD_flow = [(0,1,120)] #this one is saved for the two node signal network
+    #OD_flow = [(0,2,105),(1,2,25)] #this one is saved for the two node signal two od network
+    OD_flow = [(0,3,80),(1,3,25),(2,3,25)] #this one is saved for the two node signal three od network
 
     # Signalized nodes id (after relabeling!!)
-    signalized_nodes = [10,11] #complex
+    #signalized_nodes = [10,11] #complex
     #signalized_nodes = [4] #merge
     #signalized_nodes = [3] #simple
-    #signalized_nodes = [3,5]
+    #signalized_nodes = [3,5] #two node
+    #signalized_nodes = [4,6] #two node two od
+    signalized_nodes = [5,7] #two node three od
 
     # show the plot in browser or make a summary
     summary = True
@@ -114,9 +123,9 @@ def main():
 
     
     if not summary:
-        show_network(g, flows=result.flows, euclidean=True, signalized_nodes=signalized_nodes, O_or_D=O_or_D)
+        show_network_own(g, flows=result.flows, euclidean=True, signalized_nodes=signalized_nodes, O_or_D=O_or_D)
     else:
-        graph = show_network(g, flows = result.flows, euclidean=True,return_plot=True, signalized_nodes=signalized_nodes, O_or_D=O_or_D)
+        graph = show_network_own(g, flows = result.flows, euclidean=True,return_plot=True, signalized_nodes=signalized_nodes, O_or_D=O_or_D)
         export_png(graph, filename=str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/network.png' )
         listOfPlots = ['network.png']
         summary_string = 'SUMMARY: cost method = {}, heuristic = {}'.format(methodCost, methodGreen)
