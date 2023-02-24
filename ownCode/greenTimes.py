@@ -48,7 +48,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
     converged = False
     greens = initial_greens
     step = 1
-    previous_greens = np.multiply(initial_greens,2)
+    previous_greens = np.multiply(initial_greens,1)
     while not converged:
         step+=1
         if method =='equisaturation':
@@ -62,6 +62,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
         maxIndex = equality.index(max(equality))
         #all to the largest, non to the others but with safety (never assign 0 bc sometimes dividing by gi)
         change = 0
+        
         for i in range(len(equality)):
             if i != maxIndex:
                 green_time_aon[i] = 0.01
@@ -69,7 +70,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
         green_time_aon[maxIndex] = 1-change
 
         #apply the msa step
-        newGreens = [(1 / step * g_aon) + ((step - 1) / step * g) for g_aon, g in zip(green_time_aon, greens)]
+        newGreens = [((1 / step) * g_aon) + ((step - 1) / step * g) for g_aon, g in zip(green_time_aon, greens)]
         def check_for_equality(list):
             equal = True
             for i in range(len(list)-1):

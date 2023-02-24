@@ -26,7 +26,7 @@ gap_definition = "relative gap"
 msa_max_iterations = parameters.static_assignment.msa_max_iterations
 msa_delta = 10**-4
 
-class GreenStaticAssignment(StaticAssignment):
+class StaticAssignmentIncludingGreen(StaticAssignment):
 
     def run_greens(self, methodAl, greenTimes , method, store_iterations=False, previous_flow=False, **kwargs):
        

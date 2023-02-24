@@ -8,7 +8,7 @@ from visualisation_override import show_network_own, get_node_list, get_link_lis
 from network_summary import create_summary, demand_summary, result_summary
 from own_networks import makeOwnToyNetwork
 from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes
-from dyntapy_green_time_change import GreenStaticAssignment
+from cost_msa_dyntapy import StaticAssignmentIncludingGreen
 from dyntapy import show_network
 from greenTimes import get_green_times
 from bokeh.resources import CDN
@@ -38,7 +38,7 @@ def main():
         # two-node
         # two-node-two-od
         # two-node-three-od
-    network_type = 'complex'
+    network_type = 'simple'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     
@@ -84,7 +84,7 @@ def main():
     g = set_signalized_nodes_and_links(g, signalized_nodes[network_type])
 
     odGraph = getODGraph(OD_flow[network_type], O_or_D[network_type])
-    assignment = GreenStaticAssignment(g, odGraph)
+    assignment = StaticAssignmentIncludingGreen(g, odGraph)
 
 
     # The first greens are automatically set to 0.5 to for all the intersecting links
@@ -115,13 +115,13 @@ def main():
 
         newResult, ff_tt = assignment.run_greens('msa', greens,methodCost)
         #print('flows: {}'.format([(idx, flow) for idx, flow in enumerate(newResult.flows)]))
-        #print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
+        print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
 
         newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g)
         print('new greens = {}'.format(newGreens))
         #calculating the gap (difference o)
         gap = np.linalg.norm(np.subtract(result.flows, newResult.flows)) + np.linalg.norm(np.subtract(prev_flow, newResult.flows))
-
+        print('current gap = {}'.format(round(gap,5)))
 
         prev_flow = result.flows
         result = newResult
