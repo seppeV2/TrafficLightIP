@@ -27,7 +27,7 @@ def autoRunMain():
     greens = [g1,g2,g3,g4,g5]
     green_policy = ['50-50','40-60','20-80','60-40','80-20']
     cases = [(b,e),(b,p),(w,e),(w,p)]
-
+    #main(w,e,g1, green_policy[0])
     for idx,green in enumerate(greens): 
         for (cost, policy) in cases:
             main(cost,policy,green, green_policy[idx])

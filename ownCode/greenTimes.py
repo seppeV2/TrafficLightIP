@@ -72,8 +72,9 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
             if i != maxIndex:
                 green_time_aon[i] = 0.01
                 change += 0.01
-        green_time_aon[maxIndex] = 1-change
         """
+        green_time_aon[maxIndex] = 1-change
+        
 
         #apply the msa step
         newGreens = [(1 / step * g_aon) + ((step - 1) / step * g) for g_aon, g in zip(green_time_aon, greens)]
@@ -84,7 +85,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
                 if abs(list[i] - list[i+1]) > msa_delta:
                     equal = False
             return equal
-        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < 10**-5) or (check_for_equality(equality)) or step < 1500
+        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < 10**-5) or (check_for_equality(equality))
         previous_greens = greens
         greens = newGreens
 

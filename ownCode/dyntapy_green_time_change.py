@@ -69,7 +69,7 @@ def msa_green_flow_averaging(
     ff_tt = network.links.length / network.links.free_speed
 
     #hardcoded (see path 1-3 as 1 link with twice the free flow cost)
-    ff_tt_adjusted = [ff_tt[0], 0.0001, ff_tt[2], 2*ff_tt[3]]
+    ff_tt_adjusted = [0.375, 0.0001, ff_tt[2], 2*0.375]
 
     greenTimes = list(greenTimesDic.values())
     dos = None
