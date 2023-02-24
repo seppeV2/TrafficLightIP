@@ -66,27 +66,32 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method):
         maxIndex = equality.index(max(equality))
         #all to the largest, non to the others but with safety (never assign 0 bc sometimes dividing by gi)
         change = 0
+            # doesn't need to be done anymore (bc no deviation by zero)
+        """
         for i in range(len(equality)):
             if i != maxIndex:
                 green_time_aon[i] = 0.01
                 change += 0.01
         green_time_aon[maxIndex] = 1-change
+        """
 
         #apply the msa step
         newGreens = [(1 / step * g_aon) + ((step - 1) / step * g) for g_aon, g in zip(green_time_aon, greens)]
+        newGreens = safety_greens(newGreens)
         def check_for_equality(list):
             equal = True
             for i in range(len(list)-1):
                 if abs(list[i] - list[i+1]) > msa_delta:
                     equal = False
             return equal
-        greens = safety_greens(greens)
-        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < 10**-5) or (check_for_equality(equality))
+        converged = ((np.linalg.norm(np.subtract(newGreens,greens))+np.linalg.norm(np.subtract(newGreens,previous_greens))) < 10**-5) or (check_for_equality(equality)) or step < 1500
         previous_greens = greens
         greens = newGreens
 
         if check_for_equality(equality):
             converged_reason = 'equality'
+        elif step < 1500:
+            converged_reason = 'max steps reached'
         else:
             converged_reason = 'no change in greens' 
         
@@ -113,7 +118,7 @@ def safety_greens(greens):
             #newGreens[idx] = round(newGreens[idx] - div, 6)
             newGreens[idx] -= div
     #check if after adjustment all values are still larger than 0.01        
-    safety_greens(newGreens)
+    return safety_greens(newGreens)
 #in here we will calculate the green times according to different policies
 #These will be used in the cost function of the static assignment
 def equisaturationGreenTimes(caps, flows, initial_greens, ff_tts, method):
