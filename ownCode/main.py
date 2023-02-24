@@ -38,34 +38,40 @@ def main():
         # two-node
         # two-node-two-od
         # two-node-three-od
-    network_type = 'two-node-three-od'
+    network_type = 'complex'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     
-    #O_or_D = [(10,35),(30,15),(50,35),(90,35)] #this one is saved for the complex network
-    #O_or_D = [(0,30),(0,0),(35,30)] #this one is saved for the merge network
-    #O_or_D = [(0,30),(35,30)] #this one is saved for the simple network
-    #O_or_D = [(0,30),(65,30)] #this one is saved for the two node signal network
-    #O_or_D = [(0,30),(30,0),(65,30)] #this one is saved for the two node signal two od network
-    O_or_D = [(0,30),(30,0),(0,0),(65,30)] #this one is saved for the two node signal three od network
+    O_or_D = {
+        'complex' :[(10,35),(30,15),(50,35),(90,35)], #this one is saved for the complex network
+        'merge' :[(0,30),(0,0),(35,30)], #this one is saved for the merge network
+        'simple' :[(0,30),(35,30)], #this one is saved for the simple network
+        'two-node' :[(0,30),(65,30)], #this one is saved for the two node signal network
+        'two-node-two-od' :[(0,30),(30,0),(65,30)], #this one is saved for the two node signal two od network
+        'two-node-three-od' :[(0,30),(30,0),(0,0),(65,30)] #this one is saved for the two node signal three od network
+    }
 
     # This is a list of tuples (x,y,z) with x the origin, y the destination and z the flow (after relabeling)
-    # X and Y = the location of the element in the O_or_D list 
+    # X and Y = the location of the element in the O_or_D[network_type] list 
     
-    #OD_flow = [(0,3,30),(1,3,30),(2,3,35)] #this one is saved for the complex network
-    #OD_flow = [(0,2,80),(1,2,40)] #this one is saved for the merge network
-    #OD_flow = [(0,1,120)] #this one is saved for the merge network
-    #OD_flow = [(0,1,120)] #this one is saved for the two node signal network
-    #OD_flow = [(0,2,105),(1,2,25)] #this one is saved for the two node signal two od network
-    OD_flow = [(0,3,80),(1,3,25),(2,3,25)] #this one is saved for the two node signal three od network
+    OD_flow = {
+        'complex' :[(0,3,30),(1,3,30),(2,3,35)], #this one is saved for the complex network
+        'merge' : [(0,2,80),(1,2,40)], #this one is saved for the merge network
+        'simple' : [(0,1,120)], #this one is saved for the merge network
+        'two-node' : [(0,1,120)], #this one is saved for the two node signal network
+        'two-node-two-od' : [(0,2,105),(1,2,25)], #this one is saved for the two node signal two od network
+        'two-node-three-od' : [(0,3,80),(1,3,25),(2,3,25)] #this one is saved for the two node signal three od network
+    }
 
     # Signalized nodes id (after relabeling!!)
-    #signalized_nodes = [10,11] #complex
-    #signalized_nodes = [4] #merge
-    #signalized_nodes = [3] #simple
-    #signalized_nodes = [3,5] #two node
-    #signalized_nodes = [4,6] #two node two od
-    signalized_nodes = [5,7] #two node three od
+    signalized_nodes = {
+        'complex' : [10,11], #complex
+        'merge' : [4], #merge
+        'simple' : [3], #simple
+        'two-node' : [3,5], #two node
+        'two-node-two-od' : [4,6], #two node two od
+        'two-node-three-od' : [5,7] #two node three od
+    }
 
     # show the plot in browser or make a summary
     summary = True
@@ -74,10 +80,10 @@ def main():
     print("\nSTARTING SETUP\n")
 
     g = makeOwnToyNetwork(network_type)
-    g = addCentroidODNodes(g, O_or_D)
-    g = set_signalized_nodes_and_links(g, signalized_nodes)
+    g = addCentroidODNodes(g, O_or_D[network_type])
+    g = set_signalized_nodes_and_links(g, signalized_nodes[network_type])
 
-    odGraph = getODGraph(OD_flow, O_or_D)
+    odGraph = getODGraph(OD_flow[network_type], O_or_D[network_type])
     assignment = GreenStaticAssignment(g, odGraph)
 
 
@@ -123,14 +129,14 @@ def main():
 
     
     if not summary:
-        show_network_own(g, flows=result.flows, euclidean=True, signalized_nodes=signalized_nodes, O_or_D=O_or_D)
+        show_network_own(g, flows=result.flows, euclidean=True, signalized_nodes=signalized_nodes[network_type], O_or_D=O_or_D[network_type])
     else:
-        graph = show_network_own(g, flows = result.flows, euclidean=True,return_plot=True, signalized_nodes=signalized_nodes, O_or_D=O_or_D)
+        graph = show_network_own(g, flows = result.flows, euclidean=True,return_plot=True, signalized_nodes=signalized_nodes[network_type], O_or_D=O_or_D[network_type])
         export_png(graph, filename=str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/network.png' )
         listOfPlots = ['network.png']
         summary_string = 'SUMMARY: cost method = {}, heuristic = {}'.format(methodCost, methodGreen)
-        summary_string += demand_summary(O_or_D, OD_flow,signalized_nodes )
-        demand = sum([flow for (_,_,flow) in OD_flow])
+        summary_string += demand_summary(O_or_D[network_type], OD_flow[network_type],signalized_nodes[network_type] )
+        demand = sum([flow for (_,_,flow) in OD_flow[network_type]])
         result_summary_string = result_summary(result,greens,assignment.internal_network.links.capacity,non_connectors)
         create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, demand)
         

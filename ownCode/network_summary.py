@@ -4,6 +4,7 @@ import numpy as np
 from html2image import Html2Image
 #install opencv-python for this (via pip)
 import cv2
+import os
 
 def text_to_image(textString, size = 'summary'):
     img = Image.new('RGB', (550, 400), (255, 255, 255)) if size == 'summary' else Image.new('RGB', (1050, 350), (255, 255, 255))
@@ -33,8 +34,9 @@ def create_summary(listOfPlots, string, property_string, method, policy, network
     vstack.append(figure3)
 
     vstack = np.vstack(vstack)
-
-    cv2.imwrite(str(pathlib.Path(__file__).parent)+'/summaryFiles/summary_{}_{}_{}_D={}.png'.format(method, policy, network_type, demand), vstack)
+    path = str(pathlib.Path(__file__).parent)+'/summaryFiles/{}/'.format(network_type)
+    os.makedirs(path, exist_ok=True)
+    cv2.imwrite(path+'summary_{}_{}_D={}.png'.format(method, policy, demand), vstack)
 
 
 
