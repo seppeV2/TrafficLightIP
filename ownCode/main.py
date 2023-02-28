@@ -2,6 +2,8 @@ import networkx as nx
 import numpy as np
 import pathlib
 import matplotlib.pyplot as plt
+from bokeh.models import Circle, ColumnDataSource, Grid, LinearAxis, Plot
+
 
 
 from visualisation_override import show_network_own, get_node_list, get_link_list
@@ -13,6 +15,8 @@ from dyntapy import show_network
 from greenTimes import get_green_times
 from bokeh.resources import CDN
 from bokeh.io import export_png
+
+
 
 
 
@@ -29,7 +33,7 @@ def main():
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'P0'
+    methodGreen = 'equisaturation'
 
     # Chose your network type 
         # complex
@@ -38,7 +42,7 @@ def main():
         # two-node
         # two-node-two-od
         # two-node-three-od
-    network_type = 'two-node-three-od'
+    network_type = 'merge'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     
@@ -56,7 +60,7 @@ def main():
     
     OD_flow = {
         'complex' :[(0,3,30),(1,3,30),(2,3,35)], #this one is saved for the complex network
-        'merge' : [(0,2,80),(1,2,40)], #this one is saved for the merge network
+        'merge' : [(0,2,145),(1,2,100)], #this one is saved for the merge network
         'simple' : [(0,1,120)], #this one is saved for the merge network
         'two-node' : [(0,1,120)], #this one is saved for the two node signal network
         'two-node-two-od' : [(0,2,105),(1,2,25)], #this one is saved for the two node signal two od network
@@ -91,7 +95,7 @@ def main():
     # For the 'two link merge intersections' a different distribution can be chosen for the initial green times
     # the more link merge intersections are always equal distributed no mather what argument is given, the argument is  
     # a string type, chose one of the following: '[40,60]','[60,40]','[20,80]','[80,20]' or 'equal' for the respective distribution (in percentage)
-    firstGreens, non_connectors = generateFirstGreen(g,distribution = 'equal')
+    firstGreens, non_connectors = generateFirstGreen(g,distribution = i)
     print('first greens = {}'.format(firstGreens))
     print('non_connector links = {}'.format(non_connectors))
     
@@ -138,7 +142,8 @@ def main():
         summary_string += demand_summary(O_or_D[network_type], OD_flow[network_type],signalized_nodes[network_type] )
         demand = sum([flow for (_,_,flow) in OD_flow[network_type]])
         result_summary_string = result_summary(result,greens,assignment.internal_network.links.capacity,non_connectors)
-        create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, demand)
-        
+        create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, demand,i)
 
-main()
+distributions = ['[40,60]','[60,40]','[20,80]','[80,20]','equal']
+for i in distributions:
+    main()

@@ -15,7 +15,7 @@ def text_to_image(textString, size = 'summary'):
     img.save(str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/'+file_name)
     return file_name
 
-def create_summary(listOfPlots, string, property_string, method, policy, network_type, demand):
+def create_summary(listOfPlots, string, property_string, method, policy, network_type, demand,i):
     text_image1 = text_to_image(string)
     listOfPlots.insert(1,text_image1)
     text_image2 = text_to_image(property_string, 'result')
@@ -36,7 +36,7 @@ def create_summary(listOfPlots, string, property_string, method, policy, network
     vstack = np.vstack(vstack)
     path = str(pathlib.Path(__file__).parent)+'/summaryFiles/{}/'.format(network_type)
     os.makedirs(path, exist_ok=True)
-    cv2.imwrite(path+'summary_{}_{}_D={}.png'.format(method, policy, demand), vstack)
+    cv2.imwrite(path+'summary_{}_{}_D={}_{}.png'.format(method, policy, demand,i), vstack)
 
 
 
