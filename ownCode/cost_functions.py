@@ -2,7 +2,7 @@ from math import inf
 import numpy as np
 from dyntapy.settings import parameters
 from ownFunctions import getIntersections
-
+from dyntapy.sta.utilities import __bpr_cost_single
 
 bpr_b = parameters.static_assignment.bpr_beta
 bpr_a = parameters.static_assignment.bpr_alpha
@@ -15,7 +15,7 @@ def __bpr_green_cost(flows, capacities, ff_tts, g_times, tot_links):
         if signal_links[it] == 1:
             costs[it] = __bpr_green_cost_single(f, c, ff_tt,g_time)
         else:
-            costs[it] = ff_tts[it]
+            costs[it] = __bpr_cost_single(f, c, ff_tt)
     return costs
 
 #building our own bpr funtion 
@@ -32,7 +32,7 @@ def __webster_two_term_green(flows, capacities, ff_tts, g_times, tot_links):
         if signal_links[it] == 1:
             costs[it] = __webster_two_term_green_single(f, c, ff_tt,g_time)
         else:
-            costs[it] = ff_tts[it]
+            costs[it] = __webster_two_term_green_single(f, c, ff_tt,1)
     return costs
 
 def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):

@@ -87,7 +87,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
         greens = newGreens
         if check_for_equality(equality):
             converged_reason = 'equality'
-        elif step > 500:
+        elif step > 1500:
             converged_reason = 'max steps'
         else:
             converged_reason = 'no change in greens' 

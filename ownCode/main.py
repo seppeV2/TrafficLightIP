@@ -29,7 +29,7 @@ def main():
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'P0'
+    methodGreen = 'equisaturation'
 
     # Chose your network type 
         # complex
@@ -38,7 +38,7 @@ def main():
         # two-node
         # two-node-two-od
         # two-node-three-od
-    network_type = 'two-node-three-od'
+    network_type = 'merge'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     
@@ -56,7 +56,7 @@ def main():
     
     OD_flow = {
         'complex' :[(0,3,30),(1,3,30),(2,3,35)], #this one is saved for the complex network
-        'merge' : [(0,2,80),(1,2,40)], #this one is saved for the merge network
+        'merge' : [(0,2,100),(1,2,50)], #this one is saved for the merge network
         'simple' : [(0,1,120)], #this one is saved for the merge network
         'two-node' : [(0,1,120)], #this one is saved for the two node signal network
         'two-node-two-od' : [(0,2,105),(1,2,25)], #this one is saved for the two node signal two od network
@@ -105,7 +105,7 @@ def main():
     print('\nSTART THE LOOP\n')
         #initialise parameters and variables
     delta = 10**-4
-    maxLoops = 100
+    maxLoops = 98
     safety_loop = 0
     gap = 1
     prev_flow = np.zeros(len(result.flows))
