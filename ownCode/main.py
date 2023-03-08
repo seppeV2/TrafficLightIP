@@ -29,7 +29,7 @@ def main():
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'equisaturation'
+    methodGreen = 'P0'
 
     # Chose your network type 
         # complex
@@ -38,7 +38,7 @@ def main():
         # two-node
         # two-node-two-od
         # two-node-three-od
-    network_type = 'merge'
+    network_type = 'simple'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     
@@ -57,7 +57,7 @@ def main():
     OD_flow = {
         'complex' :[(0,3,30),(1,3,30),(2,3,35)], #this one is saved for the complex network
         'merge' : [(0,2,100),(1,2,50)], #this one is saved for the merge network
-        'simple' : [(0,1,120)], #this one is saved for the merge network
+        'simple' : [(0,1,150)], #this one is saved for the merge network
         'two-node' : [(0,1,120)], #this one is saved for the two node signal network
         'two-node-two-od' : [(0,2,105),(1,2,25)], #this one is saved for the two node signal two od network
         'two-node-three-od' : [(0,3,80),(1,3,25),(2,3,25)] #this one is saved for the two node signal three od network
@@ -90,8 +90,8 @@ def main():
     # The first greens are automatically set to 0.5 to for all the intersecting links
     # For the 'two link merge intersections' a different distribution can be chosen for the initial green times
     # the more link merge intersections are always equal distributed no mather what argument is given, the argument is  
-    # a string type, chose one of the following: '[40,60]','[60,40]','[20,80]','[80,20]' or 'equal' for the respective distribution (in percentage)
-    firstGreens, non_connectors = generateFirstGreen(g,distribution = 'equal')
+    # a string type, chose one of the following: '40-60','60-40','20-80','80-20' or 'equal' for the respective distribution (in percentage)
+    firstGreens, non_connectors = generateFirstGreen(g,distribution = '40-60')
     print('first greens = {}'.format(firstGreens))
     print('non_connector links = {}'.format(non_connectors))
     
