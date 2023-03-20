@@ -56,8 +56,7 @@ def set_network_attributes(g, non_default_link, new_cap_speed):
 def set_signalized_nodes_and_links(g, signalized_nodes = list):
     signalized_edges = []
     signalized_links = []
-    global global_signalized_nodes, global_signalized_links, signal_node_link_connect
-    global_signalized_nodes = signalized_nodes
+    signal_node_link_connect = {}
 
     for v in g.nodes:
         if g.nodes[v]['node_id'] in signalized_nodes:
@@ -78,17 +77,21 @@ def set_signalized_nodes_and_links(g, signalized_nodes = list):
                 signal_node_link_connect[v] = [data['link_id']]
         else:
             data['signalized'] = 0
+
+    global global_signalized_nodes, global_signalized_links
+    global_signalized_nodes = signalized_nodes
     global_signalized_links = signalized_links
+
     g.update(edges = g.edges, nodes = g.nodes)
-    return g
+    return g, signal_node_link_connect
 
 # generate the first greens for all links (equal distribution when signalized, 1 when not) 
 # also return the list of non connector links (their link id)
 # An optional parameter 'distribution' is included for test purposes (to check if the starting greens have an impact)
-def generateFirstGreen(g, distribution: str = 'equal'):
+def generateFirstGreen(g,signal_node_link_connect ,distribution: str = 'equal'):
     first_greens = {}
     non_connectors = []
-
+    print(f'distribution = {distribution}')
     for _,v,data in g.edges.data():
         # store the non connector links (just for visualization)
         try:

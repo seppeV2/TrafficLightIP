@@ -1,13 +1,16 @@
 import numpy as np
 from dyntapy.settings import parameters
-from ownFunctions import getIntersections, global_signalized_links, global_signalized_nodes, signal_node_link_connect
+from ownFunctions import getIntersections
+
+
 from cost_functions import __bpr_green_cost_single
+
 bpr_b = parameters.static_assignment.bpr_beta
 bpr_a = parameters.static_assignment.bpr_alpha
 msa_delta = parameters.static_assignment.msa_delta
 
 
-def get_green_times(flows, assignment, method, oldGreenTimesDic, ff_tt, g ):
+def get_green_times(flows, assignment, method, oldGreenTimesDic, ff_tt, g, signal_node_link_connect ):
     network = assignment.internal_network
     caps = network.links.capacity
 

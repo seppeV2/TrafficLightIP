@@ -2,12 +2,12 @@ import networkx as nx
 import numpy as np
 import pathlib
 import matplotlib.pyplot as plt
-
+import os
 
 from visualisation_override import show_network_own, get_node_list, get_link_list
 from network_summary import create_summary, demand_summary, result_summary
 from own_networks import makeOwnToyNetwork
-from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes
+from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes, global_signalized_nodes
 from cost_msa_dyntapy import StaticAssignmentIncludingGreen
 from dyntapy import show_network
 from greenTimes import get_green_times
@@ -15,21 +15,43 @@ from bokeh.resources import CDN
 from bokeh.io import export_png
 
 
+# function to auto generate all the results
+def main_loop():
+    
+    methods = [('WebsterTwoTerm', 'equisaturation'), ('WebsterTwoTerm', 'P0'),('bpr', 'equisaturation'),('bpr', 'P0')]
+    networks = ['merge', 'simple', 'two-node', 'two-node-two-od', 'two-node-three-od', 'complex' ] 
+    greenTimes = ['40-60','60-40','20-80','80-20','equal']
+
+    OD_flow = {
+        'complex' :[[(0,3,80),(1,3,25),(2,3,25)],[(0,3,100),(1,3,10),(2,3,10)] ,[(0,3,50),(1,3,30),(2,3,30)] ,[(0,3,100),(1,3,20),(2,3,20)] ,[(0,3,40),(1,3,40),(2,3,40)],[(0,3,25),(1,3,25),(2,3,25)],[(0,3,20),(1,3,100),(2,3,10)] ,[(0,3,90),(1,3,15),(2,3,30)] ,[(0,3,70),(1,3,20),(2,3,10)] ,[(0,3,40),(1,3,80),(2,3,40)],[(0,3,105),(1,3,15),(2,3,15)],[(0,3,110),(1,3,10),(2,3,20)]] ,
+        'merge' : [[(0,2,60),(1,2,30)],[(0,2,80),(1,2,30)],[(0,2,100),(1,2,10)],[(0,2,95),(1,2,25)],[(0,2,100),(1,2,25)],[(0,2,95),(1,2,25)],[(0,2,50),(1,2,60)],[(0,2,115),(1,2,10)],[(0,2,30),(1,2,30)],[(0,2,120),(1,2,15)],[(0,2,70),(1,2,40)]],
+        'simple' : [[(0,1,90)],[(0,1,120)],[(0,1,100)],[(0,1,105)],[(0,1,150)]],
+        'two-node' : [[(0,1,90)],[(0,1,120)],[(0,1,100)],[(0,1,105)],[(0,1,150)]],
+        'two-node-two-od' : [[(0,2,60),(1,2,30)],[(0,2,80),(1,2,30)],[(0,2,100),(1,2,10)],[(0,2,95),(1,2,25)],[(0,2,100),(1,2,25)],[(0,2,95),(1,2,25)],[(0,2,50),(1,2,60)],[(0,2,115),(1,2,10)],[(0,2,30),(1,2,30)],[(0,2,120),(1,2,15)],[(0,2,70),(1,2,40)],[(0,2,105),(1,2,25)],[(0,2,110),(1,2,10)],[(0,2,105),(1,2,40)]],
+        'two-node-three-od' : [[(0,3,80),(1,3,25),(2,3,25)],[(0,3,100),(1,3,10),(2,3,10)] ,[(0,3,50),(1,3,30),(2,3,30)] ,[(0,3,100),(1,3,20),(2,3,20)] ,[(0,3,40),(1,3,40),(2,3,40)],[(0,3,25),(1,3,25),(2,3,25)],[(0,3,20),(1,3,100),(2,3,10)] ,[(0,3,90),(1,3,15),(2,3,30)] ,[(0,3,70),(1,3,20),(2,3,10)] ,[(0,3,40),(1,3,80),(2,3,40)],[(0,3,105),(1,3,15),(2,3,15)],[(0,3,110),(1,3,10),(2,3,20)]] 
+    }
+
+    
+    for network in networks:
+        for (cost, policy) in methods:
+            for greenTime in greenTimes:
+                for flow in OD_flow[network]:
+                    main(network, cost, policy, greenTime, flow)
 
 
 #main function where we merge everything together
-def main():
+def main(network_type, methodCost,methodGreen, greenDistribution, flow):
 
     #assign all variables 
         #two cost functions at the moment
         # 'bpr' to use the bpr cost function
         # 'WebsterTwoTerm' to use the webster two term delay cost function
-    methodCost = 'bpr'
+    #methodCost = 'WebsterTwoTerm'
 
         #two green time policies
         # 'equisaturation' 
         # 'P0'
-    methodGreen = 'P0'
+    #methodGreen = 'equisaturation'
 
     # Chose your network type 
         # complex
@@ -38,7 +60,7 @@ def main():
         # two-node
         # two-node-two-od
         # two-node-three-od
-    network_type = 'simple'
+    #network_type = 'two-node-two-od'
 
     # Every element of this list is a tuple (x,y) with the coordinates of an origin or destination
     
@@ -79,11 +101,15 @@ def main():
     #setup
     print("\nSTARTING SETUP\n")
 
-    g = makeOwnToyNetwork(network_type)
+    g = makeOwnToyNetwork(network_type) 
     g = addCentroidODNodes(g, O_or_D[network_type])
-    g = set_signalized_nodes_and_links(g, signalized_nodes[network_type])
+    g,signal_node_link_connect = set_signalized_nodes_and_links(g, signalized_nodes[network_type])
 
-    odGraph = getODGraph(OD_flow[network_type], O_or_D[network_type])
+    #flow = OD_flow[network_type]
+    print(f'network = {network_type}')
+    print(f'green time distribution = {greenDistribution}')
+    print(f'Asked for Demand = {flow}\n')
+    odGraph = getODGraph(flow, O_or_D[network_type])
     assignment = StaticAssignmentIncludingGreen(g, odGraph)
 
 
@@ -91,21 +117,22 @@ def main():
     # For the 'two link merge intersections' a different distribution can be chosen for the initial green times
     # the more link merge intersections are always equal distributed no mather what argument is given, the argument is  
     # a string type, chose one of the following: '40-60','60-40','20-80','80-20' or 'equal' for the respective distribution (in percentage)
-    firstGreens, non_connectors = generateFirstGreen(g,distribution = '40-60')
+    #greenDistribution = 'equal'
+    firstGreens, non_connectors = generateFirstGreen(g,signal_node_link_connect,distribution = greenDistribution)
     print('first greens = {}'.format(firstGreens))
     print('non_connector links = {}'.format(non_connectors))
     
     #initial msa without traffic lights
     result, ff_tt = assignment.run_greens('msa', firstGreens, methodCost)
     #calculate the first green times according the first static assignment
-    greens = get_green_times(result.flows,assignment, methodGreen, firstGreens, ff_tt, g)
+    greens = get_green_times(result.flows,assignment, methodGreen, firstGreens, ff_tt, g,signal_node_link_connect)
 
 
     #start the loop
     print('\nSTART THE LOOP\n')
         #initialise parameters and variables
     delta = 10**-4
-    maxLoops = 98
+    maxLoops = 100
     safety_loop = 0
     gap = 1
     prev_flow = np.zeros(len(result.flows))
@@ -117,7 +144,7 @@ def main():
         #print('flows: {}'.format([(idx, flow) for idx, flow in enumerate(newResult.flows)]))
         print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
 
-        newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g)
+        newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g,signal_node_link_connect)
         print('new greens = {}'.format(newGreens))
         #calculating the gap (difference o)
         gap = np.linalg.norm(np.subtract(result.flows, newResult.flows)) + np.linalg.norm(np.subtract(prev_flow, newResult.flows))
@@ -132,13 +159,16 @@ def main():
         show_network_own(g, flows=result.flows, euclidean=True, signalized_nodes=signalized_nodes[network_type], O_or_D=O_or_D[network_type])
     else:
         graph = show_network_own(g, flows = result.flows, euclidean=True,return_plot=True, signalized_nodes=signalized_nodes[network_type], O_or_D=O_or_D[network_type])
-        export_png(graph, filename=str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/network.png' )
+        path = str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/'
+        os.makedirs(path, exist_ok=True)
+        export_png(graph, filename=path+'network.png' )
         listOfPlots = ['network.png']
         summary_string = 'SUMMARY: cost method = {}, heuristic = {}'.format(methodCost, methodGreen)
-        summary_string += demand_summary(O_or_D[network_type], OD_flow[network_type],signalized_nodes[network_type] )
-        demand = sum([flow for (_,_,flow) in OD_flow[network_type]])
-        result_summary_string = result_summary(result,greens,assignment.internal_network.links.capacity,non_connectors)
-        create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, demand)
-        
+        summary_string += demand_summary(O_or_D[network_type], flow,signalized_nodes[network_type] )
+        #demand = sum([flow for (_,_,flow) in OD_flow[network_type]])
+        result_summary_string = result_summary(result,greens,assignment.internal_network.links.capacity, non_connectors,safety_loop, firstGreens)
+        create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, str(flow), greenDistribution)
 
-main()
+
+#main('two-node-two-od', 'WebsterTwoTerm', 'equisaturation', '40-60', [(0,2,60),(1,2,30)] )        
+main_loop()
