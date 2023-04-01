@@ -9,7 +9,7 @@ from network_summary import create_summary, demand_summary, result_summary
 from own_networks import makeOwnToyNetwork
 from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes, global_signalized_nodes
 from cost_msa_dyntapy import StaticAssignmentIncludingGreen
-from dyntapy import show_network
+from dyntapy import show_network, relabel_graph
 from greenTimes import get_green_times
 from bokeh.resources import CDN
 from bokeh.io import export_png
@@ -56,6 +56,7 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
     ## Chose your network type
         # complex
         # merge
+        # twoMerge
         # simple
         # two-node
         # two-node-two-od
@@ -67,6 +68,7 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
     O_or_D = {
         'complex' :[(10,35),(30,15),(50,35),(90,35)], #this one is saved for the complex network
         'merge' :[(0,30),(0,0),(35,30)], #this one is saved for the merge network
+        'twoMerge' : [(0,30),(0,0),(0,60),(35,30)],#two merge
         'simple' :[(0,30),(35,30)], #this one is saved for the simple network
         'two-node' :[(0,30),(65,30)], #this one is saved for the two node signal network
         'two-node-two-od' :[(0,30),(30,0),(65,30)], #this one is saved for the two node signal two od network
@@ -79,6 +81,7 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
     OD_flow = {
         'complex' :[(0,3,30),(1,3,30),(2,3,35)], #this one is saved for the complex network
         'merge' : [(0,2,100),(1,2,50)], #this one is saved for the merge network
+        'twoMerge': [(0,3,70),(1,3,20),(2,3,20)],#two merge
         'simple' : [(0,1,150)], #this one is saved for the merge network
         'two-node' : [(0,1,120)], #this one is saved for the two node signal network
         'two-node-two-od' : [(0,2,105),(1,2,25)], #this one is saved for the two node signal two od network
@@ -89,6 +92,7 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
     signalized_nodes = {
         'complex' : [10,11], #complex
         'merge' : [4], #merge
+        'twoMerge': [5], #two merge
         'simple' : [3], #simple
         'two-node' : [3,5], #two node
         'two-node-two-od' : [4,6], #two node two od
@@ -170,5 +174,5 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
         create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, str(flow), greenDistribution)
 
 
-#main('two-node-two-od', 'WebsterTwoTerm', 'equisaturation', '40-60', [(0,2,60),(1,2,30)] )        
-main_loop()
+main('twoMerge', 'bpr', 'P0', 'equal', [(0,3,120),(1,3,40),(2,3,40)] )        
+#main_loop()
