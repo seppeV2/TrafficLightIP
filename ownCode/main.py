@@ -148,14 +148,16 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
         #print('flows: {}'.format([(idx, flow) for idx, flow in enumerate(newResult.flows)]))
         print('link costs: {}'.format([(idx, cost) for idx, cost in enumerate(newResult.link_costs)]))
 
-        newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g,signal_node_link_connect)
-        print('new greens = {}'.format(newGreens))
         #calculating the gap (difference o)
         gap = np.linalg.norm(np.subtract(result.flows, newResult.flows)) + np.linalg.norm(np.subtract(prev_flow, newResult.flows))
         print('current gap = {}'.format(round(gap,5)))
 
         prev_flow = result.flows
         result = newResult
+        if gap<delta: break
+        newGreens = get_green_times(newResult.flows, assignment, methodGreen, greens, ff_tt, g,signal_node_link_connect)
+        print('new greens = {}'.format(newGreens))
+        
         greens = newGreens
 
     
@@ -174,5 +176,5 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
         create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, str(flow), greenDistribution)
 
 
-main('twoMerge', 'bpr', 'P0', 'equal', [(0,3,120),(1,3,40),(2,3,40)] )        
+main('twoMerge', 'WebsterTwoTerm', 'P0', '20-80', [(0,3,80),(1,3,20),(2,3,20)] )        
 #main_loop()
