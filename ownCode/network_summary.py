@@ -2,6 +2,7 @@ import pathlib
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 from html2image import Html2Image
+from greenTimes import get_link_delay
 #install opencv-python for this (via pip)
 import cv2
 import os
@@ -53,7 +54,7 @@ def demand_summary(O_or_D, OD_flow, signalized_nodes):
 
     return string
 
-def result_summary(result,greens, capacities, non_connectors,safety_loops, first_greens):
+def result_summary(result,greens, capacities, non_connectors,safety_loops, first_greens, ff_tts, method):
     step = 0
     string = '\nSummary of the results:\n\n'
     string0 = '- The link first green times = '
@@ -61,15 +62,20 @@ def result_summary(result,greens, capacities, non_connectors,safety_loops, first
     string2 = '- The link costs = '
     string3 = '- The link green times = '
     string4 = '- The link capacities = '
+
+    string4b = '- The link dos = ' if method == 'equisaturation' else '- The link pressure = '
     string5bis = ' (converged)' if safety_loops != 100 else ' (non-converged)'
     string5 = f'- The amount of iterations needed = {safety_loops}' + string5bis
-    for idx, (flow, cost, cap) in enumerate(zip(result.flows, result.link_costs, capacities)):
+    for idx, (flow, cost, cap) in enumerate(zip(result.flows, result.link_costs, capacities,)):
         if idx in non_connectors:
             string0 += '({}, {}), '.format(idx,round(first_greens[idx],2))
             string1 += '({}, {}), '.format(idx,round(flow,2)) 
             string2 += '({}, {}), '.format(idx,round(cost,2))        
             string3 += '({}, {}), '.format(idx,round(greens[idx],2))
             string4 += '({}, {}), '.format(idx,round(cap,2))
+            if method == 'equisaturation': string4b += '({}, {}), '.format(idx,round((result.flows[idx]/(greens[idx]*capacities[idx])),4))
+            else: string4b += '({}, {}), '.format(idx,round(cap*get_link_delay(flow,cap,ff_tts[idx],greens[idx]),4))
+            
             step+=1
 
             if (step)%10 == 0:
@@ -78,9 +84,11 @@ def result_summary(result,greens, capacities, non_connectors,safety_loops, first
                 string2 += '\n                          '
                 string3 += '\n                                    '
                 string4 += '\n                                 '
+                string4b += '\n                                 '
     string0 += '\n\n'
     string1 += '\n\n'
     string2 += '\n\n'
     string3 += '\n\n'
     string4 += '\n\n'
-    return string+string0+string1+string2+string3+string4+string5
+    string4b += '\n\n'
+    return string+string0+string1+string2+string3+string4+string4b+string5

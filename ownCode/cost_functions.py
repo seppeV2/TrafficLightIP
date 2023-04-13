@@ -47,7 +47,6 @@ def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):
         term1 = (cycle_time*(1-g_time)**2)/(1-g_time*dos)
         term2 = (dos**2)/(capacity*g_time*dos*(1-dos))
         cost = ff_tt + (9/20)*(term1+term2)
-    print(f'for passage with flow = {flow}, fft = {ff_tt}, capacity = {capacity}, g_time = {g_time}, and dos = {dos}, the cost = {cost}')
     return cost
 
 

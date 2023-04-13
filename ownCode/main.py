@@ -136,7 +136,7 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
     print('\nSTART THE LOOP\n')
         #initialise parameters and variables
     delta = 10**-4
-    maxLoops = 100
+    maxLoops = 200
     safety_loop = 0
     gap = 1
     prev_flow = np.zeros(len(result.flows))
@@ -172,9 +172,9 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
         summary_string = 'SUMMARY: cost method = {}, heuristic = {}'.format(methodCost, methodGreen)
         summary_string += demand_summary(O_or_D[network_type], flow,signalized_nodes[network_type] )
         #demand = sum([flow for (_,_,flow) in OD_flow[network_type]])
-        result_summary_string = result_summary(result,greens,assignment.internal_network.links.capacity, non_connectors,safety_loop, firstGreens)
+        result_summary_string = result_summary(result,greens,assignment.internal_network.links.capacity, non_connectors,safety_loop, firstGreens, ff_tt, methodGreen)
         create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, str(flow), greenDistribution)
 
 
-main('twoMerge', 'WebsterTwoTerm', 'P0', '20-80', [(0,3,80),(1,3,20),(2,3,20)] )        
+main('twoMerge', 'bpr', 'equisaturation', '20-80', [(0,3,120),(1,3,20),(2,3,20)] )        
 #main_loop()

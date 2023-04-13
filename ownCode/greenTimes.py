@@ -79,6 +79,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
         #apply the msa step
         newGreens = [((1 / msa_step) * g_aon) + (((msa_step - 1) / msa_step) * g) for g_aon, g in zip(green_time_aon, greens)]
         newGreens = safety_greens(newGreens)
+        
         def check_for_equality(list):
             equal = True
             for i in range(len(list)-1):
@@ -98,7 +99,7 @@ def msa_green_times(caps, flows, initial_greens, ff_tts, method, link_ids):
     print('MSA Green convergence: {}'.format(converged_reason))
     result_greens = {}
     for i in range(len(greens)):
-        result_greens[link_ids[i]] = greens[i]
+        result_greens[link_ids[i]] = previous_greens[i]
 
     return result_greens
 
