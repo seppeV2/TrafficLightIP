@@ -1,6 +1,9 @@
 import numpy as np
 
-newGreens = [0.875,0.125]
-greens = [0.75,0.25]
+costs = [0.8,0.2,0.3]
+flows = [20,20,80]
 
-print(np.linalg.norm(np.subtract(newGreens,greens))< 10**-5)
+veh_hour = sum([cost*flow for cost, flow in zip(costs, flows)])
+print(veh_hour)
+
+
