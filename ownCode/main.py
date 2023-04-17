@@ -1,15 +1,11 @@
-import networkx as nx
 import numpy as np
-import pathlib
-import matplotlib.pyplot as plt
 import os
-
-from visualisation_override import show_network_own, get_node_list, get_link_list
+from pathlib import Path
+from visualisation_override import show_network_own
 from network_summary import create_summary, demand_summary, result_summary
 from own_networks import makeOwnToyNetwork
 from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes, global_signalized_nodes
 from cost_msa_dyntapy import StaticAssignmentIncludingGreen
-from dyntapy import show_network, relabel_graph
 from greenTimes import get_green_times
 from bokeh.resources import CDN
 from bokeh.io import export_png
@@ -41,7 +37,7 @@ def main_loop():
 
 
 #main function where we merge everything together
-def main(network_type, methodCost,methodGreen, greenDistribution, flow):
+def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary = True):
 
     #assign all variables 
         #two cost functions at the moment
@@ -101,7 +97,7 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
     }
 
     # show the plot in browser or make a summary
-    summary = True
+    #summary = True
 
     #setup
     print("\nSTARTING SETUP\n")
@@ -164,9 +160,20 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
     
     if not summary:
         show_network_own(g, flows=result.flows, euclidean=True, signalized_nodes=signalized_nodes[network_type], O_or_D=O_or_D[network_type])
+        veh_hours = 0
+        final_flow = {}
+        final_cost = {}
+        final_green = {}
+        for idx, (flow, cost) in enumerate(zip(result.flows, result.link_costs)):
+            if idx in non_connectors:
+                veh_hours += flow*cost  
+                final_flow[idx] = round(flow,3)
+                final_cost[idx] = round(cost,3)
+                final_green[idx] = round(greens[idx],3)
+        print(f'\nFINAL RESULTS:\n\nCost function = {methodCost}, Policy = {methodGreen}\nFinal greens = {final_green}\nFinal flows = {final_flow}\nFinal costs = {final_cost}\nFinal vehicle hours = {round(veh_hours,4)}')
     else:
         graph = show_network_own(g, flows = result.flows, euclidean=True,return_plot=True, signalized_nodes=signalized_nodes[network_type], O_or_D=O_or_D[network_type])
-        path = str(pathlib.Path(__file__).parent)+'/summaryFiles/rawFigures/'
+        path = str(Path(__file__).parent)+'/summaryFiles/rawFigures/'
         os.makedirs(path, exist_ok=True)
         export_png(graph, filename=path+'network.png' )
         listOfPlots = ['network.png']
@@ -177,5 +184,5 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow):
         create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, str(flow), greenDistribution)
 
 
-#main('twoMerge', 'bpr', 'equisaturation', '20-80', [(0,3,120),(1,3,20),(2,3,20)] )        
-main_loop()
+main('twoMerge', 'bpr', 'equisaturation', '20-80', [(0,3,120),(1,3,20),(2,3,20)], False )        
+#main_loop()

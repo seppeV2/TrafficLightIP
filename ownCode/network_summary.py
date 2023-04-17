@@ -1,7 +1,6 @@
 import pathlib
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
-from html2image import Html2Image
 from greenTimes import get_link_delay
 #install opencv-python for this (via pip)
 import cv2

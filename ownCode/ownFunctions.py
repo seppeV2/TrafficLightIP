@@ -1,6 +1,6 @@
 import numpy as np
 
-from dyntapy import relabel_graph, show_network
+from dyntapy import relabel_graph
 from dyntapy.demand_data import od_graph_from_matrix
 from osmnx.distance import euclidean_dist_vec
 from dyntapy.demand_data import add_centroids

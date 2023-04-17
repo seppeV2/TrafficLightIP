@@ -1,8 +1,6 @@
 import numpy as np
 import networkx as nx
 from ownFunctions import set_network_attributes
-from dyntapy import relabel_graph
-from dyntapy.demand_data import add_centroids
 
 
 #building our own two rout DiGraph route (using nodes)
