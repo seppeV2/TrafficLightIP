@@ -4,8 +4,8 @@ from dyntapy.settings import parameters
 from ownFunctions import getIntersections
 from dyntapy.sta.utilities import __bpr_cost_single
 
-bpr_b = parameters.static_assignment.bpr_beta
-bpr_a = parameters.static_assignment.bpr_alpha
+bpr_b = parameters.static_assignment.bpr_beta #4
+bpr_a = parameters.static_assignment.bpr_alpha #0.15
 
 def __bpr_green_cost(flows, capacities, ff_tts, g_times, tot_links):
     costs = np.empty(tot_links, dtype=np.float64)
@@ -50,3 +50,19 @@ def __webster_two_term_green_single(flow, capacity, ff_tt, g_time):
     return cost
 
 
+def __modified_bpr_cost_single(flow, capacity, ff_tt):
+    modified_bpr_b = 4
+    modifief_bpr_a = 0.5
+    return 1.0 * ff_tt + np.multiply(modifief_bpr_a, pow(flow / capacity, modified_bpr_b)) * ff_tt
+
+
+def __hybrid_cost(flows, capacities, ff_tts, g_times, tot_links):
+    costs = np.empty(tot_links, dtype=np.float64)
+    signal_links = getIntersections(tot_links)[2]
+    for it,(f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
+        assert c != 0
+        if signal_links[it] == 1:
+            costs[it] = __modified_bpr_cost_single(f, c, ff_tt) + __webster_two_term_green_single(f, c, ff_tt, g_time)
+        else:
+            costs[it] = __modified_bpr_cost_single(f, c, ff_tt)
+    return costs

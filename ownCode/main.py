@@ -14,7 +14,7 @@ from bokeh.io import export_png
 # function to auto generate all the results
 def main_loop():
     
-    methods = [('WebsterTwoTerm', 'equisaturation'), ('WebsterTwoTerm', 'P0'),('bpr', 'equisaturation'),('bpr', 'P0')]
+    methods = [('hybrid', 'equisaturation'), ('hybrid','P0')]#,('WebsterTwoTerm', 'equisaturation'), ('WebsterTwoTerm', 'P0'),('bpr', 'equisaturation'),('bpr', 'P0')]
     networks = ['twoMerge']#,'merge', 'simple', 'two-node', 'two-node-two-od', 'two-node-three-od', 'complex' ] 
     greenTimes = ['40-60','60-40','20-80','80-20','equal']
 
@@ -22,22 +22,23 @@ def main_loop():
         'complex' :[[(0,3,80),(1,3,25),(2,3,25)],[(0,3,100),(1,3,10),(2,3,10)] ,[(0,3,50),(1,3,30),(2,3,30)] ,[(0,3,100),(1,3,20),(2,3,20)] ,[(0,3,40),(1,3,40),(2,3,40)],[(0,3,25),(1,3,25),(2,3,25)],[(0,3,20),(1,3,100),(2,3,10)] ,[(0,3,90),(1,3,15),(2,3,30)] ,[(0,3,70),(1,3,20),(2,3,10)] ,[(0,3,40),(1,3,80),(2,3,40)],[(0,3,105),(1,3,15),(2,3,15)],[(0,3,110),(1,3,10),(2,3,20)]] ,
         'merge' : [[(0,2,60),(1,2,30)],[(0,2,100),(1,2,10)],[(0,2,95),(1,2,25)],[(0,2,100),(1,2,25)],[(0,2,95),(1,2,25)],[(0,2,120),(1,2,10)],[(0,2,30),(1,2,30)],[(0,2,120),(1,2,40)],[(0,2,230),(1,2,40)],[(0,2,145),(1,2,40)],[(0,2,145),(1,2,70)]],
         'simple' : [[(0,1,90)],[(0,1,120)],[(0,1,145)],[(0,1,230)]],
-        'twoMerge' : [[(0,3,70),(1,3,10),(2,3,10)],[(0,3,90),(1,3,5),(2,3,5)],[(0,3,80),(1,3,20),(2,3,20)],[(0,3,80),(1,3,20),(2,3,20)],[(0,3,80),(1,3,30),(2,3,20)] ,[(0,3,100),(1,3,20),(2,3,20)] ,[(0,3,120),(1,3,20),(2,3,20)] ,[(0,3,145),(1,3,20),(2,3,20)],[(0,3,230),(1,3,20),(2,3,20)]],
+        'twoMerge' : [[(0,3,70),(1,3,10),(2,3,10)],[(0,3,90),(1,3,5),(2,3,5)],[(0,3,80),(1,3,20),(2,3,20)],[(0,3,80),(1,3,20),(2,3,20)],[(0,3,80),(1,3,30),(2,3,20)] ,[(0,3,100),(1,3,20),(2,3,20)],[(0,3,120),(1,3,20),(2,3,20)] ,[(0,3,145),(1,3,20),(2,3,20)],[(0,3,230),(1,3,20),(2,3,20)]],
         'two-node' : [[(0,1,90)],[(0,1,120)],[(0,1,145)],[(0,1,230)]],
         'two-node-two-od' : [[(0,2,60),(1,2,30)],[(0,2,100),(1,2,10)],[(0,2,95),(1,2,25)],[(0,2,100),(1,2,25)],[(0,2,95),(1,2,25)],[(0,2,120),(1,2,10)],[(0,2,30),(1,2,30)],[(0,2,120),(1,2,40)],[(0,2,230),(1,2,40)],[(0,2,145),(1,2,40)],[(0,2,145),(1,2,70)]],
         'two-node-three-od' : [[(0,3,80),(1,3,25),(2,3,25)],[(0,3,100),(1,3,10),(2,3,10)] ,[(0,3,50),(1,3,30),(2,3,30)] ,[(0,3,100),(1,3,20),(2,3,30)] ,[(0,3,40),(1,3,40),(2,3,40)],[(0,3,25),(1,3,25),(2,3,25)],[(0,3,20),(1,3,100),(2,3,10)] ,[(0,3,90),(1,3,15),(2,3,30)] ,[(0,3,70),(1,3,20),(2,3,10)] ,[(0,3,40),(1,3,80),(2,3,40)],[(0,3,105),(1,3,15),(2,3,15)],[(0,3,145),(1,3,10),(2,3,20)],[(0,3,145),(1,3,40),(2,3,70)],[(0,3,230),(1,3,10),(2,3,20)]]
     }
 
-    
+    string = ''
     for network in networks:
         for (cost, policy) in methods:
             for greenTime in greenTimes:
-                for flow in OD_flow[network]:
-                    main(network, cost, policy, greenTime, flow)
+                #for flow in OD_flow[network]:
+                    string = main(network, cost, policy, greenTime, [(0,3,80),(1,3,15),(2,3,15)], string = string)
 
+    print(string)
 
 #main function where we merge everything together
-def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary = True):
+def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary = True, string = ''):
 
     #assign all variables 
         #two cost functions at the moment
@@ -170,6 +171,7 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary 
                 final_flow[idx] = round(flow,3)
                 final_cost[idx] = round(cost,3)
                 final_green[idx] = round(greens[idx],3)
+        string += f'\nFINAL RESULTS:\n\nCost function = {methodCost}, Policy = {methodGreen}\nFinal greens = {final_green}\nFinal flows = {final_flow}\nFinal costs = {final_cost}\nFinal vehicle hours = {round(veh_hours,4)}/n'
         print(f'\nFINAL RESULTS:\n\nCost function = {methodCost}, Policy = {methodGreen}\nFinal greens = {final_green}\nFinal flows = {final_flow}\nFinal costs = {final_cost}\nFinal vehicle hours = {round(veh_hours,4)}')
     else:
         graph = show_network_own(g, flows = result.flows, euclidean=True,return_plot=True, signalized_nodes=signalized_nodes[network_type], O_or_D=O_or_D[network_type])
@@ -183,6 +185,6 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary 
         result_summary_string = result_summary(result,greens,assignment.internal_network.links.capacity, non_connectors,safety_loop, firstGreens, ff_tt, methodGreen)
         create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, str(flow), greenDistribution)
 
-
-main('twoMerge', 'bpr', 'equisaturation', '20-80', [(0,3,120),(1,3,20),(2,3,20)], False )        
-#main_loop()
+    return string
+#main('twoMerge', 'hybrid', 'P0', '20-80', [(0,3,80),(1,3,15),(2,3,15)], True )        
+main_loop()

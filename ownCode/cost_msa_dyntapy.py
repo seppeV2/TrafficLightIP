@@ -10,7 +10,7 @@ from dyntapy.results import StaticResult, get_skim
 from dyntapy._context import iteration_states
 from dyntapy.assignments import StaticAssignment
 
-from cost_functions import __bpr_green_cost, __webster_two_term_green
+from cost_functions import __bpr_green_cost, __webster_two_term_green, __hybrid_cost
 
 from dyntapy.graph_utils import (
     dijkstra_all,
@@ -88,6 +88,14 @@ def msa_green_flow_averaging(
                     g_times = greenTimes,
                     tot_links = network.tot_links
                 )
+            elif method == 'hybrid':
+                costs = __hybrid_cost(
+                    capacities=network.links.capacity,
+                    ff_tts=ff_tt,
+                    flows=f2,
+                    g_times = greenTimes,
+                    tot_links = network.tot_links
+                )
         else:
             if method == 'bpr':
                 costs = __bpr_green_cost(
@@ -99,6 +107,14 @@ def msa_green_flow_averaging(
                 )
             elif method == 'WebsterTwoTerm':
                 costs = __webster_two_term_green(
+                    capacities=network.links.capacity,
+                    ff_tts=ff_tt,
+                    flows=f2,
+                    g_times = greenTimes,
+                    tot_links = network.tot_links
+                )
+            elif method == 'hybrid':
+                costs = __hybrid_cost(
                     capacities=network.links.capacity,
                     ff_tts=ff_tt,
                     flows=f2,
