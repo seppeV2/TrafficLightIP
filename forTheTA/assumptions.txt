@@ -1,0 +1,10 @@
+In this file is discripe the assumptions that are made in this prototype of the code.
+
+1) Only msa can be used to determin the static assignment 
+2) At the moment a node where multiple links arrive in is seen as a intersection with traffic lights, this should be implemented better
+	also the function to determine these intersections is not very optimal build.
+3) Only webster green times are used. 
+4) I added a factor in the bpr function with the green times to make the green times more important, this is probably not correct but its good to see if the algorithm works or not. 
+5)The Network is build in a difinition and we use kind of hack to change the capacity and the speed. This should come out of external file like the files in the examples. 
+6) The OD graph should be build more optimal (I think I will implement a function for that) [or this should become clear when using centroids]
+
