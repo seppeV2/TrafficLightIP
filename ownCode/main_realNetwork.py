@@ -19,7 +19,7 @@ def main(cityName: str, buffer: int, methodGreen: str, demandFactor = 1):
     g, odGraph, signalized_nodes, OD_points = create_osm_network(cityName, buffer, demandFactor)
     g,signal_node_link_connect = set_signalized_nodes_and_links(g, signalized_nodes)
 
-    greenDistribution = 'equal'
+    greenDistribution = 'capacity'
 
     assignment = StaticAssignmentIncludingGreen(g, odGraph)
 
@@ -28,7 +28,7 @@ def main(cityName: str, buffer: int, methodGreen: str, demandFactor = 1):
     # For the 'two link merge intersections' a different distribution can be chosen for the initial green times
     # the more link merge intersections are always equal distributed no mather what argument is given, the argument is  
     # a string type, chose one of the following: '40-60','60-40','20-80','80-20' or 'equal' for the respective distribution (in percentage)
-    firstGreens, non_connectors = generateFirstGreen(g,signal_node_link_connect, distribution = greenDistribution)
+    firstGreens, non_connectors = generateFirstGreen(g,signal_node_link_connect, distribution = greenDistribution, realLife = True)
 
     #initial msa without traffic lights
     result, ff_tt = assignment.run_greens('msa', firstGreens, methodCost)

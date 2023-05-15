@@ -88,10 +88,22 @@ def set_signalized_nodes_and_links(g, signalized_nodes = list):
 # generate the first greens for all links (equal distribution when signalized, 1 when not) 
 # also return the list of non connector links (their link id)
 # An optional parameter 'distribution' is included for test purposes (to check if the starting greens have an impact)
-def generateFirstGreen(g,signal_node_link_connect ,distribution: str = 'equal'):
+def generateFirstGreen(g,signal_node_link_connect ,distribution: str = 'equal', realLife = False):
+    print(signal_node_link_connect)
     first_greens = {}
     non_connectors = []
     print(f'distribution = {distribution}')
+
+
+    if realLife:
+        totCapacity = {}
+        for _,v,data in g.edges.data():
+            if v in signal_node_link_connect.keys():
+                try:
+                    totCapacity[v] += data['capacity']
+                except KeyError:
+                    totCapacity[v] = data['capacity']
+
     for _,v,data in g.edges.data():
         # store the non connector links (just for visualization)
         try:
@@ -100,10 +112,18 @@ def generateFirstGreen(g,signal_node_link_connect ,distribution: str = 'equal'):
             non_connectors.append(data['link_id'])
 
         if v in signal_node_link_connect.keys():
+            if distribution == 'capacity' and realLife:
+                greenFraction = data['capacity']/totCapacity[v]
+                first_greens[data['link_id']] = greenFraction
+                x = data['capacity']
+                y= data['link_id']
+                print(f' link {y} gets a green time of {greenFraction}, total capacity = {totCapacity[v]}, this capacity = {x} ')
             # When more than two links are merging in an intersection, the option
             # of equal split is always chosen 
-            if distribution == 'equal' or len(signal_node_link_connect[v]) > 2:
+            elif distribution == 'equal' or len(signal_node_link_connect[v]) > 2:
+                print('in the if loop')
                 first_greens[data['link_id']] = 1/len(signal_node_link_connect[v])
+            
             else:
                 if distribution == '40-60':
                     dis = [0.40,0.60]
