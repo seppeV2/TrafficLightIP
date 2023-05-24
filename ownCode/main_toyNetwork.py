@@ -4,20 +4,20 @@ from pathlib import Path
 from visualisation_override import show_network_own
 from network_summary import create_summary, demand_summary, result_summary
 from own_networks import makeOwnToyNetwork
-from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes, global_signalized_nodes
+from ownFunctions import getODGraph, set_signalized_nodes_and_links, generateFirstGreen, addCentroidODNodes, global_signalized_nodes, getPolicyConditions
 from cost_msa_dyntapy import StaticAssignmentIncludingGreen
 from greenTimes import get_green_times
 from bokeh.resources import CDN
 from bokeh.io import export_png
-
+import matplotlib.pyplot as plt
 
 # function to auto generate all the results
 def main_loop():
     
-    #methods = [('hybrid', 'equisaturation'), ('hybrid','P0'),('WebsterTwoTerm', 'equisaturation'), ('WebsterTwoTerm', 'P0'),('bpr', 'equisaturation'),('bpr', 'P0')]
-    methods = [('hybrid','P0'),('WebsterTwoTerm', 'equisaturation'), ('WebsterTwoTerm', 'P0'),('bpr', 'equisaturation'),('bpr', 'P0')]
+    methods = [('hybrid', 'equisaturation'), ('hybrid','P0'),('WebsterTwoTerm', 'equisaturation'), ('WebsterTwoTerm', 'P0'),('bpr', 'equisaturation'),('bpr', 'P0')]
+    #methods = [('hybrid','P0'),('WebsterTwoTerm', 'equisaturation'), ('WebsterTwoTerm', 'P0'),('bpr', 'equisaturation'),('bpr', 'P0')]
     
-    networks = ['simple']#,'merge', 'simple', 'two-node', 'two-node-two-od', 'two-node-three-od', 'complex' ] 
+    networks = ['merge']#,'merge', 'simple', 'two-node', 'two-node-two-od', 'two-node-three-od', 'complex' ] 
     greenTimes = ['40-60','60-40','20-80','80-20','equal']
 
     OD_flow = {
@@ -77,15 +77,15 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary 
     # This is a list of tuples (x,y,z) with x the origin, y the destination and z the flow (after relabeling)
     # X and Y = the location of the element in the O_or_D[network_type] list 
     
-    OD_flow = {
-        'complex' :[(0,3,30),(1,3,30),(2,3,35)], #this one is saved for the complex network
-        'merge' : [(0,2,100),(1,2,50)], #this one is saved for the merge network
-        'twoMerge': [(0,3,70),(1,3,20),(2,3,20)],#two merge
-        'simple' : [(0,1,150)], #this one is saved for the merge network
-        'two-node' : [(0,1,120)], #this one is saved for the two node signal network
-        'two-node-two-od' : [(0,2,105),(1,2,25)], #this one is saved for the two node signal two od network
-        'two-node-three-od' : [(0,3,80),(1,3,25),(2,3,25)] #this one is saved for the two node signal three od network
-    }
+    # OD_flow = {
+    #     'complex' :[(0,3,30),(1,3,30),(2,3,35)], #this one is saved for the complex network
+    #     'merge' : [(0,2,100),(1,2,50)], #this one is saved for the merge network
+    #     'twoMerge': [(0,3,70),(1,3,20),(2,3,20)],#two merge
+    #     'simple' : [(0,1,150)], #this one is saved for the merge network
+    #     'two-node' : [(0,1,120)], #this one is saved for the two node signal network
+    #     'two-node-two-od' : [(0,2,105),(1,2,25)], #this one is saved for the two node signal two od network
+    #     'two-node-three-od' : [(0,3,80),(1,3,25),(2,3,25)] #this one is saved for the two node signal three od network
+    # }
 
     # Signalized nodes id (after relabeling!!)
     signalized_nodes = {
@@ -127,6 +127,8 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary 
     
     #initial msa without traffic lights
     result, ff_tt = assignment.run_greens('msa', firstGreens, methodCost)
+    policyConditions = getPolicyConditions(result.flows,firstGreens,assignment.internal_network.links.capacity,ff_tt , methodGreen, methodCost, previousResult = {})
+
     #calculate the first green times according the first static assignment
     greens = get_green_times(result.flows,assignment, methodGreen, firstGreens, ff_tt, g,signal_node_link_connect,methodCost)
 
@@ -139,6 +141,7 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary 
     safety_loop = 0
     gap = 1
     prev_flow = np.zeros(len(result.flows))
+    policyConditions = getPolicyConditions(result.flows,greens,assignment.internal_network.links.capacity,ff_tt , methodGreen, methodCost, previousResult = policyConditions)
     while gap > delta and safety_loop < maxLoops:
         safety_loop += 1
         print('\n#### LOOP = {} ###'.format(safety_loop))
@@ -158,7 +161,8 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary 
         print('new greens = {}'.format(newGreens))
         
         greens = newGreens
-
+        policyConditions = getPolicyConditions(result.flows,greens,assignment.internal_network.links.capacity,ff_tt , methodGreen, methodCost, previousResult = policyConditions)
+    
     
     if not summary:
         show_network_own(g, flows=result.flows, euclidean=True, signalized_nodes=signalized_nodes[network_type], O_or_D=O_or_D[network_type])
@@ -186,6 +190,26 @@ def main(network_type, methodCost,methodGreen, greenDistribution, flow, summary 
         result_summary_string = result_summary(result,greens,assignment.internal_network.links.capacity, non_connectors,safety_loop, firstGreens, ff_tt, methodGreen, methodCost)
         create_summary(listOfPlots, summary_string, result_summary_string, methodCost, methodGreen, network_type, str(flow), greenDistribution)
 
+
     return string
-#main('twoMerge', 'hybrid', 'P0', '20-80', [(0,3,80),(1,3,15),(2,3,15)], True )        
-main_loop()
+
+#1
+main('simple', 'bpr', 'P0', 'equal', [(0,1,100)], summary = True)
+#main('simple', 'bpr', 'equisaturation', 'equal', [(0,1,100)], summary = True)
+
+#2
+#greenTimes = ['40-60','60-40','20-80','80-20','equal']
+#for green in greenTimes:
+#    main('simple', 'WebsterTwoTerm', 'P0', green, [(0,1,75)], summary = True)
+#    main('simple', 'WebsterTwoTerm', 'equisaturation', green, [(0,1,75)], summary = True)
+
+
+#3
+#main('twoMerge', 'bpr', 'P0', 'equal', [(0,3,120),(1,3,15),(2,3,15)], summary = True )     
+#main('twoMerge', 'bpr', 'equisaturation', 'equal', [(0,3,120),(1,3,15),(2,3,15)], summary = True )    
+
+#4
+# greenTimes = ['40-60','60-40','20-80','80-20','equal']
+# for green in greenTimes:
+#     main('twoMerge', 'WebsterTwoTerm', 'P0', green,[(0,3,80),(1,3,15),(2,3,15)], summary = True)
+#     main('twoMerge', 'WebsterTwoTerm', 'equisaturation', green, [(0,3,80),(1,3,15),(2,3,15)], summary = True)

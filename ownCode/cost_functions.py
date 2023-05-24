@@ -1,7 +1,7 @@
 from math import inf
 import numpy as np
 from dyntapy.settings import parameters
-from ownFunctions import getIntersections
+import ownFunctions
 from dyntapy.sta.utilities import __bpr_cost_single
 
 bpr_b = parameters.static_assignment.bpr_beta #4
@@ -9,7 +9,7 @@ bpr_a = parameters.static_assignment.bpr_alpha #0.15
 
 def __bpr_green_cost(flows, capacities, ff_tts, g_times, tot_links):
     costs = np.empty(tot_links, dtype=np.float64)
-    signal_links = getIntersections(tot_links)[2]
+    signal_links = ownFunctions.getIntersections(tot_links)[2]
     for it,(f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
         if signal_links[it] == 1:
@@ -26,7 +26,7 @@ def __bpr_green_cost_single(flow, capacity, ff_tt, g_time):
 
 def __webster_two_term_green(flows, capacities, ff_tts, g_times, tot_links):
     costs = np.empty(tot_links, dtype=np.float64)
-    signal_links = getIntersections(tot_links)[2]
+    signal_links = ownFunctions.getIntersections(tot_links)[2]
     for it, (f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
         if signal_links[it] == 1:
@@ -61,7 +61,7 @@ def __hybrid_cost_single(flow, cap, ff_tt, g_time):
 def __hybrid_cost(flows, capacities, ff_tts, g_times, tot_links):
     
     costs = np.empty(tot_links, dtype=np.float64)
-    signal_links = getIntersections(tot_links)[2]
+    signal_links = ownFunctions.getIntersections(tot_links)[2]
     for it,(f, c, ff_tt,g_time) in enumerate(zip(flows, capacities, ff_tts, g_times)):
         assert c != 0
         if signal_links[it] == 1:

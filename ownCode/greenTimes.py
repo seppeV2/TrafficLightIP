@@ -1,6 +1,6 @@
 import numpy as np
 from dyntapy.settings import parameters
-from ownFunctions import getIntersections
+import ownFunctions 
 
 from cost_functions import __bpr_green_cost_single, __webster_two_term_green_single, __hybrid_cost_single
 
@@ -14,7 +14,7 @@ def get_green_times(flows, assignment, method, oldGreenTimesDic, ff_tt, g, signa
     network = assignment.internal_network
     caps = network.links.capacity
 
-    link_summary = getIntersections(network.tot_links)[2] #dictionary with link id and 1, 0 (signalized or not)
+    link_summary = ownFunctions.getIntersections(network.tot_links)[2] #dictionary with link id and 1, 0 (signalized or not)
     greenDic = {}
 
 

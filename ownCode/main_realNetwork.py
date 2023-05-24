@@ -9,7 +9,7 @@ from networkx import read_gpickle, write_gpickle
 
 
 #main function where we merge everything together
-def main(cityName: str, buffer: int, methodGreen: str, demandFactor = 1):
+def main(cityName: str, buffer: int, methodGreen: str, greenDistribution = 'equal',demandFactor = 1):
 
     methodCost = 'hybrid'
     
@@ -19,15 +19,12 @@ def main(cityName: str, buffer: int, methodGreen: str, demandFactor = 1):
     g, odGraph, signalized_nodes, OD_points = create_osm_network(cityName, buffer, demandFactor)
     g,signal_node_link_connect = set_signalized_nodes_and_links(g, signalized_nodes)
 
-    greenDistribution = 'capacity'
+    #greenDistribution = 'capacity'
 
     assignment = StaticAssignmentIncludingGreen(g, odGraph)
 
 
-    # The first greens are automatically set to 0.5 to for all the intersecting links
-    # For the 'two link merge intersections' a different distribution can be chosen for the initial green times
-    # the more link merge intersections are always equal distributed no mather what argument is given, the argument is  
-    # a string type, chose one of the following: '40-60','60-40','20-80','80-20' or 'equal' for the respective distribution (in percentage)
+    # The first greens are automatically set to equal or via capacity when green distribution = capacity 
     firstGreens, non_connectors = generateFirstGreen(g,signal_node_link_connect, distribution = greenDistribution, realLife = True)
 
     #initial msa without traffic lights
@@ -68,4 +65,8 @@ def main(cityName: str, buffer: int, methodGreen: str, demandFactor = 1):
     print(f'\n\nRESULTS:\nvehicle hours with {greenDistribution} = {round(vehicle_hours_start,5)}\nvehicle after algorithm with {methodGreen} = {round(vehicle_hours_end,5)}')
 
 
-main('Kortrijk', 3000, 'equisaturation', 1.5)
+main('Kortrijk', 3000, 'equisaturation', greenDistribution = 'capacity', demandFactor = 1.5)
+#187
+#188
+#153
+#241

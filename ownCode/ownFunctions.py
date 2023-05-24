@@ -4,6 +4,7 @@ from dyntapy import relabel_graph
 from dyntapy.demand_data import od_graph_from_matrix
 from osmnx.distance import euclidean_dist_vec
 from dyntapy.demand_data import add_centroids
+import greenTimes
 
 global_signalized_nodes = []
 global_signalized_links = []
@@ -89,10 +90,9 @@ def set_signalized_nodes_and_links(g, signalized_nodes = list):
 # also return the list of non connector links (their link id)
 # An optional parameter 'distribution' is included for test purposes (to check if the starting greens have an impact)
 def generateFirstGreen(g,signal_node_link_connect ,distribution: str = 'equal', realLife = False):
-    print(signal_node_link_connect)
+   
     first_greens = {}
     non_connectors = []
-    print(f'distribution = {distribution}')
 
 
     if realLife:
@@ -117,11 +117,9 @@ def generateFirstGreen(g,signal_node_link_connect ,distribution: str = 'equal', 
                 first_greens[data['link_id']] = greenFraction
                 x = data['capacity']
                 y= data['link_id']
-                print(f' link {y} gets a green time of {greenFraction}, total capacity = {totCapacity[v]}, this capacity = {x} ')
             # When more than two links are merging in an intersection, the option
             # of equal split is always chosen 
             elif distribution == 'equal' or len(signal_node_link_connect[v]) > 2:
-                print('in the if loop')
                 first_greens[data['link_id']] = 1/len(signal_node_link_connect[v])
             
             else:
@@ -173,3 +171,21 @@ def get_vehicle_hours(cost, flow):
         hours += c*f
 
     return hours
+
+def getPolicyConditions(flows,greens,capacities,ff_tts , methodGreen, methodCost, previousResult = {}):
+
+    if methodGreen == 'equisaturation':
+        for idx, (flow, cap) in enumerate(zip(flows, capacities)):
+            try:
+                previousResult[idx].append(round((flow/(greens[idx]*cap)), 4))
+            except KeyError:
+                previousResult[idx] = [round((flow/(greens[idx]*cap)), 4)]
+    elif methodGreen == 'P0':
+        for idx, (flow, cap) in enumerate(zip(flows, capacities)):
+            try:
+                previousResult[idx].append(round(cap*greenTimes.get_link_delay(flow,cap,ff_tts[idx],greens[idx], methodCost),4))
+            except KeyError:
+                previousResult[idx] = [round(cap*greenTimes.get_link_delay(flow,cap,ff_tts[idx],greens[idx], methodCost),4)]
+
+    return previousResult
+
