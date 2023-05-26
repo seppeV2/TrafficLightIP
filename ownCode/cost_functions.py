@@ -56,7 +56,7 @@ def __modified_bpr_cost_single(flow, capacity, ff_tt):
     return 1.0 * ff_tt + np.multiply(modifief_bpr_a, pow(flow / capacity, modified_bpr_b)) * ff_tt
 
 def __hybrid_cost_single(flow, cap, ff_tt, g_time):
-    return __modified_bpr_cost_single(flow, cap, ff_tt) + __webster_two_term_green_single(flow, cap, ff_tt, g_time)
+    return __modified_bpr_cost_single(flow, cap, ff_tt) + __webster_two_term_green_single(flow, cap, ff_tt, g_time) - ff_tt
 
 def __hybrid_cost(flows, capacities, ff_tts, g_times, tot_links):
     
